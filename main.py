@@ -82,6 +82,30 @@ def strahler_order(node):
     print("Not done yet")
 
 
+# just like genana, but every edge gets its unique id instead of a generation
+# to be used for external grouping according to properties of the graph segments
+# TODO: probably very over engineered
+def give_id(node):
+    unique_id = 0
+    edges = np.array([], int)
+    visited = [node]
+    nodes = [node]
+
+    while len(nodes) != 0:
+        nn = []
+        for i in nodes:
+            visited.append(i)
+            neighbors = new_neighbors(i, visited)
+            for j in neighbors:
+                print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
+                edges = np.append(edges, [[[i, j, unique_id]]])
+                nn.append(j)
+                unique_id += 1
+        nodes = nn
+
+    return edges
+
+
 # Return all neighbors excluding old (already known) ones (supplied in a list)
 def new_neighbors(node, known):
     discovered = []
@@ -185,7 +209,10 @@ if __name__ == '__main__':
             edges_w_gens = order_analysis(root_node)
             write_dot(graph, edges_w_gens, True, "Ord")
         elif int(analysis_type) == 2:
-            edges_w_gens = order_analysis(root_node)
+            edges_w_gens = strahler_order(root_node)
             write_dot(graph, edges_w_gens, True, "Str_Ord")
+        elif int(analysis_type) == 3:
+            edges_w_gens = give_id(root_node)
+            write_dot(graph, edges_w_gens, False, "Id")
         else:
             print("Analysis type not supported")
