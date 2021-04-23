@@ -32,6 +32,49 @@ def generation_analysis(node):
     return edges
 
 
+def order_analysis(node):
+    pos = leaf_node_finder(node)
+    visited = []
+    edges = np.array([], int)
+    gen = 1
+
+    # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
+    # We are done, when we reach the root node
+    while len(pos) != 1 or pos[0] != node:
+        add = []
+        rm = []
+        for i in pos:
+            neighbors = list(nx.neighbors(graph, i))
+            visited.append(i)
+
+            rm_n = []
+            for j in neighbors:
+                if j in visited:
+                    if j not in pos:
+                        rm_n.append(j)
+            for k in rm_n:
+                neighbors.remove(k)
+
+            if len(list(neighbors)) <= 1:
+                print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has generation " + str(gen))
+                edges = np.append(edges, [[[i, neighbors[0], gen]]])
+                rm.append(i)
+                add.append(neighbors[0])
+
+        for i in add:
+            if i not in pos:
+                pos.append(i)
+
+        for i in rm:
+            pos.remove(i)
+            if i not in visited:
+                visited.append(i)
+
+        gen += 1
+
+    return edges
+
+
 # Return all neighbors excluding old (already known) ones (supplied in a list)
 def new_neighbors(node, known):
     discovered = []
@@ -44,6 +87,28 @@ def new_neighbors(node, known):
             discovered.append(str(i))
 
     return discovered
+
+
+# Find the leaf nodes => Walk through tree til you can't walk no more
+def leaf_node_finder(node):
+    # TODO: read this maybe for more efficiency
+    # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chains.chain_decomposition.html#networkx.algorithms.chains.chain_decomposition
+    touched = [node]
+    to_search = [node]
+    leaves = []
+
+    while len(to_search) > 0:
+        for i in list(to_search):
+            to_search.remove(i)
+            touched.append(str(i))
+            neighbors = new_neighbors(i, touched)
+            if len(neighbors) == 0:
+                leaves.append(str(i))
+            else:
+                for j in neighbors:
+                    to_search.append(j)
+
+    return leaves
 
 
 # TODO: Is this really necessary? There must be something like this in numpy!
@@ -109,8 +174,8 @@ if __name__ == '__main__':
         if int(analysis_type) == 0:
             edges_w_gens = generation_analysis(root_node)
             write_dot(graph, edges_w_gens)
+        elif int(analysis_type) == 1:
+            edges_w_gens = order_analysis(root_node)
+            write_dot(graph, edges_w_gens, True, "Ord")
         else:
             print("Analysis type not supported")
-
-
-
