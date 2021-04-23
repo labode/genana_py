@@ -152,10 +152,10 @@ def reshape_array(array, width):
     return array
 
 
-def write_dot(graph_data, edges, color=True, label='Gen'):
+def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
     colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
 
-    filename = "output_graph.dot"
+    filename = str(target_file) + ".dot"
     output_file = open(filename, "w")
 
     output_file.write("graph G {\n")
@@ -183,19 +183,20 @@ def write_dot(graph_data, edges, color=True, label='Gen'):
 
     # Make PNG from graph
     (output_graph,) = pydot.graph_from_dot_file(filename)
-    output_graph.write_png("output_graph.png")
+    output_graph.write_png(str(target_file) + ".png")
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     dotfile = sys.argv[1]
-    analysis_type = sys.argv[2]
-    root_node = sys.argv[3]
+    output = sys.argv[2]
+    analysis_type = sys.argv[3]
+    root_node = sys.argv[4]
 
     error = False
 
-    if not dotfile or not analysis_type or not root_node:
+    if not dotfile or not output or not analysis_type or not root_node:
         # TODO: Explain the needed parameters to the user
+        # TODO: Check types of inputs
         print("Missing parameters")
         error = True
 
@@ -204,15 +205,15 @@ if __name__ == '__main__':
 
         if int(analysis_type) == 0:
             edges_w_gens = generation_analysis(root_node)
-            write_dot(graph, edges_w_gens)
+            write_dot(graph, edges_w_gens, output)
         elif int(analysis_type) == 1:
             edges_w_gens = order_analysis(root_node)
-            write_dot(graph, edges_w_gens, True, "Ord")
+            write_dot(graph, edges_w_gens, output, True, "Ord")
         elif int(analysis_type) == 2:
             edges_w_gens = strahler_order(root_node)
-            write_dot(graph, edges_w_gens, True, "Str_Ord")
+            write_dot(graph, edges_w_gens, output, True, "Str_Ord")
         elif int(analysis_type) == 3:
             edges_w_gens = give_id(root_node)
-            write_dot(graph, edges_w_gens, False, "Id")
+            write_dot(graph, edges_w_gens, output, False, "Id")
         else:
             print("Analysis type not supported")
