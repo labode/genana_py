@@ -75,6 +75,13 @@ def order_analysis(node):
     return edges
 
 
+# TODO: Just like order, but after gen 1 only increment generation by one when two equal generations meet
+def strahler_order(node):
+    leaves = leaf_node_finder(node)
+
+    print("Not done yet")
+
+
 # Return all neighbors excluding old (already known) ones (supplied in a list)
 def new_neighbors(node, known):
     discovered = []
@@ -177,5 +184,8 @@ if __name__ == '__main__':
         elif int(analysis_type) == 1:
             edges_w_gens = order_analysis(root_node)
             write_dot(graph, edges_w_gens, True, "Ord")
+        elif int(analysis_type) == 2:
+            edges_w_gens = order_analysis(root_node)
+            write_dot(graph, edges_w_gens, True, "Str_Ord")
         else:
             print("Analysis type not supported")
