@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import sys
 
 
@@ -10,12 +11,24 @@ def read_graph(file):
 
 
 def generation_analysis(node):
+    gen = 1
+    edges = np.array([], int)
     visited = [node]
     nodes = [node]
 
-    neighbors = new_neighbors(nodes, visited)
+    while len(nodes) != 0:
+        nn = []
+        for i in nodes:
+            visited.append(i)
+            neighbors = new_neighbors(i, visited)
+            for j in neighbors:
+                print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
+                edges = np.append(edges, [[[i, j, gen]]])
+                nn.append(j)
+        nodes = nn
+        gen += 1
 
-    print("Genana here!")
+    return edges
 
 
 # Return all neighbors excluding old (already known) ones (supplied in a list)
@@ -30,6 +43,7 @@ def new_neighbors(node, known):
             discovered.append(str(i))
 
     return discovered
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -48,7 +62,7 @@ if __name__ == '__main__':
         graph = read_graph(dotfile)
 
         if int(analysis_type) == 0:
-            generation_analysis(root_node)
+            edges_w_gens = generation_analysis(root_node)
         else:
             print("Analysis type not supported")
 
