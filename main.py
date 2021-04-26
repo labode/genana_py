@@ -186,6 +186,19 @@ def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
     output_graph.write_png(str(target_file) + ".png")
 
 
+# TODO: For writing .nrrds => https://github.com/mhe/pynrrd
+def write_nrrd():
+    # TODO: Basic operation:
+    # get Graph => edges w. label
+    # For each edge => Read coordinates from original graph
+    # (=> We will need to parse that somehow... ideally when reading the graph)
+    # For each coordinate => Write label into propper position in a numpy array
+    # Pad array with zeros(?)
+    # Create file header (Where do we get the spatial information? => Parse the head of the *_man.mha?)
+    # Write file
+    print("")
+
+
 if __name__ == '__main__':
     dotfile = sys.argv[1]
     output = sys.argv[2]
