@@ -190,8 +190,11 @@ if __name__ == '__main__':
     output = sys.argv[2]
     analysis_type = sys.argv[3]
     root_node = sys.argv[4]
-    # TODO: Get volume dims as numbers, or do we expect a filename to parse it from?
-    dims = [700, 100, 800]
+
+    dim_x = sys.argv[5]
+    dim_y = sys.argv[6]
+    dim_z = sys.argv[7]
+    dims = [int(dim_x), int(dim_y), int(dim_z)]
 
     error = False
 
