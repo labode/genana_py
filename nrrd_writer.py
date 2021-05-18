@@ -5,7 +5,7 @@ import pydot
 
 def write(dot_graph, dims, edges, target_file):
     # Read the (input!) graph (again...), as it contains the edge coordinates we need to write the .nrrd
-    # We need to do this, as the coordinates do not seem to be accessible from the networx graph
+    # We need to do this, as the coordinates do not seem to be accessible from the networkx graph
     # TODO: Look at networkx again to make sure there is no way to access these
     graphs = pydot.graph_from_dot_file(dot_graph)
     graph = graphs[0]
