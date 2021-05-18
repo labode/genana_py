@@ -54,9 +54,12 @@ def write(dot_graph, dims, edges, target_file):
     # Set filename to write into
     filename = str(target_file) + ".nrrd"
 
-    # Define header values
-    # TODO: Add space, space directions, kinds, ?
-    # see https://pynrrd.readthedocs.io/en/latest/examples.html
-    header = {'encoding': 'raw'}
+    # Define header values (see https://pynrrd.readthedocs.io/en/latest/examples.html)
+    # TODO: Precision in space directions correct? Let user supply value somewhere? Parse from .mha?
+    header = {'kinds': ['domain', 'domain', 'domain'],
+              'space': 'left-posterior-superior',
+              'space directions':
+                  np.array([[7.0003299999999991, 0, 0], [0, 7.0003299999999991, 0], [0, 0, 7.0003299999999991]]),
+              'encoding': 'raw'}
     # write our array into a .nrrd file
     nrrd.write(filename, array, header)
