@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 import pydot
 import sys
+import nrrd_writer
 
 
 def read_graph(file):
@@ -165,8 +166,6 @@ def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
     for i in nodes:
         output_file.write(str(i) + ";\n")
 
-    edges = reshape_array(edges, 3)
-
     # Write each edge pair with generation marking
     for i in edges:
         if color == bool(True):
@@ -186,24 +185,13 @@ def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
     output_graph.write_png(str(target_file) + ".png")
 
 
-# TODO: For writing .nrrds => https://github.com/mhe/pynrrd
-def write_nrrd():
-    # TODO: Basic operation:
-    # get Graph => edges w. label
-    # For each edge => Read coordinates from original graph
-    # (=> We will need to parse that somehow... ideally when reading the graph)
-    # For each coordinate => Write label into propper position in a numpy array
-    # Pad array with zeros(?)
-    # Create file header (Where do we get the spatial information? => Parse the head of the *_man.mha?)
-    # Write file
-    print("")
-
-
 if __name__ == '__main__':
     dotfile = sys.argv[1]
     output = sys.argv[2]
     analysis_type = sys.argv[3]
     root_node = sys.argv[4]
+    # TODO: Get volume dims as numbers, or do we expect a filename to parse it from?
+    dims = [700, 100, 800]
 
     error = False
 
@@ -218,15 +206,23 @@ if __name__ == '__main__':
 
         if int(analysis_type) == 0:
             edges_w_gens = generation_analysis(root_node)
+            edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output)
+            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
         elif int(analysis_type) == 1:
             edges_w_gens = order_analysis(root_node)
+            edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output, True, "Ord")
+            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
         elif int(analysis_type) == 2:
             edges_w_gens = strahler_order(root_node)
+            edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output, True, "Str_Ord")
+            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
         elif int(analysis_type) == 3:
             edges_w_gens = give_id(root_node)
+            edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output, False, "Id")
+            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
         else:
             print("Analysis type not supported")
