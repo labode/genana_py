@@ -87,7 +87,7 @@ def strahler_order(node):
 # to be used for external grouping according to properties of the graph segments
 # TODO: probably very over engineered
 def give_id(node):
-    unique_id = 0
+    unique_id = 1
     edges = np.array([], int)
     visited = [node]
     nodes = [node]
