@@ -201,9 +201,10 @@ if __name__ == '__main__':
     error = False
 
     if not dotfile or not output or not analysis_type or not root_node or not dim_x or not dim_y or not dim_z:
-        # TODO: Explain the needed parameters to the user
         # TODO: Check types of inputs
         print("Missing parameters")
+        # Explain the needed parameters to the user
+        print("Please supply: dotfile, output_filename, analysis_type (0-3), root_node, x, y, z")
         error = True
 
     if not error:
