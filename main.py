@@ -196,9 +196,11 @@ if __name__ == '__main__':
     dim_z = sys.argv[7]
     dims = [int(dim_x), int(dim_y), int(dim_z)]
 
+    # TODO: Make writing of .dot (, .png) and .nrrd independently available?
+
     error = False
 
-    if not dotfile or not output or not analysis_type or not root_node:
+    if not dotfile or not output or not analysis_type or not root_node or not dim_x or not dim_y or not dim_z:
         # TODO: Explain the needed parameters to the user
         # TODO: Check types of inputs
         print("Missing parameters")
