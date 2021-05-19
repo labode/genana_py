@@ -11,7 +11,7 @@ def write(dot_graph, dims, edges, target_file):
     graph = graphs[0]
 
     # Initialize array in the needed size
-    array = np.zeros(dims, int)
+    array = np.zeros(dims, dtype=np.ubyte)
 
     # Now the easy part: Get the coordinates of all edges
     # and write the label id in the corresponding position in the array
@@ -48,8 +48,13 @@ def write(dot_graph, dims, edges, target_file):
             pos_arr.append(coords)
 
         # Now that we have all coordinates our edge consists of, we can set these to the edge label in our array
+        # print(pos_arr)
         for j in pos_arr:
-            array[int(j[0]), int(j[1]), int(j[2])] = i[2]
+            # TODO: Sometimes there is an empty array here
+            if j[0] == '':
+                continue
+            else:
+                array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(i[2])
 
     # Set filename to write into
     filename = str(target_file) + ".nrrd"
@@ -58,8 +63,10 @@ def write(dot_graph, dims, edges, target_file):
     # TODO: Precision in space directions correct? Let user supply value somewhere? Parse from .mha?
     header = {'kinds': ['domain', 'domain', 'domain'],
               'space': 'left-posterior-superior',
+              'space origin':
+                  np.array([0, 0, 660]),
               'space directions':
-                  np.array([[7.0003299999999991, 0, 0], [0, 7.0003299999999991, 0], [0, 0, 7.0003299999999991]]),
+                  np.array([[4.4000000000000004, 0, 0], [0, 4.4000000000000004, 0], [0, 0, 4.4000000000000004]]),
               'encoding': 'raw'}
     # write our array into a .nrrd file
     nrrd.write(filename, array, header)
