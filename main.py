@@ -264,7 +264,7 @@ def length_calculator(nx_graph):
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(node_0)][str(node_1)][0]['Length'] = length
+        nx_graph[str(node_0)][str(node_1)][0]['Length'] = round(length, 4)
 
     return nx_graph
 
