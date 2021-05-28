@@ -1,8 +1,7 @@
 import networkx as nx
-import numpy as np
-import pydot
 import sys
 import nrrd_writer
+import dot_writer
 
 
 def read_graph(file):
@@ -12,9 +11,8 @@ def read_graph(file):
     return dot_graph
 
 
-def generation_analysis(node):
+def generation_analysis(node, nx_graph):
     gen = 1
-    edges = np.array([], int)
     visited = [node]
     nodes = [node]
 
@@ -22,22 +20,21 @@ def generation_analysis(node):
         nn = []
         for i in nodes:
             visited.append(i)
-            neighbors = new_neighbors(i, visited)
+            neighbors = new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
-                edges = np.append(edges, [[[i, j, gen]]])
+                nx_graph[str(i)][str(j)][0]['Gen'] = gen
                 nn.append(j)
         nodes = nn
         gen += 1
 
-    return edges
+    return graph
 
 
-def order_analysis(node):
-    pos = leaf_node_finder(node)
+def order_analysis(node, nx_graph):
+    pos = leaf_node_finder(node, nx_graph)
     visited = []
-    edges = np.array([], int)
-    gen = 1
+    order = 1
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
     # We are done, when we reach the root node
@@ -57,8 +54,8 @@ def order_analysis(node):
                 neighbors.remove(k)
 
             if len(list(neighbors)) <= 1:
-                print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has generation " + str(gen))
-                edges = np.append(edges, [[[i, neighbors[0], gen]]])
+                print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has order " + str(order))
+                nx_graph[str(i)][str(neighbors[0])][0]['Ord'] = order
                 rm.append(i)
                 add.append(neighbors[0])
 
@@ -71,24 +68,25 @@ def order_analysis(node):
             if i not in visited:
                 visited.append(i)
 
-        gen += 1
+        order += 1
 
-    return edges
+    return nx_graph
 
 
 # TODO: Just like order, but after gen 1 only increment generation by one when two equal generations meet
-def strahler_order(node):
-    leaves = leaf_node_finder(node)
+def strahler_order(node, nx_graph):
+    leaves = leaf_node_finder(node, nx_graph)
 
     print("Not done yet")
+
+    return nx_graph
 
 
 # just like genana, but every edge gets its unique id instead of a generation
 # to be used for external grouping according to properties of the graph segments
 # TODO: probably very over engineered
-def give_id(node):
+def give_id(node, nx_graph):
     unique_id = 1
-    edges = np.array([], int)
     visited = [node]
     nodes = [node]
 
@@ -96,22 +94,22 @@ def give_id(node):
         nn = []
         for i in nodes:
             visited.append(i)
-            neighbors = new_neighbors(i, visited)
+            neighbors = new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
-                edges = np.append(edges, [[[i, j, unique_id]]])
+                nx_graph[str(i)][str(j)][0]['Id'] = unique_id
                 nn.append(j)
                 unique_id += 1
         nodes = nn
 
-    return edges
+    return nx_graph
 
 
 # Return all neighbors excluding old (already known) ones (supplied in a list)
-def new_neighbors(node, known):
+def new_neighbors(node, known, nx_graph):
     discovered = []
 
-    neighbors = nx.neighbors(graph, node)
+    neighbors = nx.neighbors(nx_graph, node)
     for i in list(neighbors):
         if i in known:
             continue
@@ -122,7 +120,7 @@ def new_neighbors(node, known):
 
 
 # Find the leaf nodes => Walk through tree til you can't walk no more
-def leaf_node_finder(node):
+def leaf_node_finder(node, nx_graph):
     # TODO: read this maybe for more efficiency
     # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chains.chain_decomposition.html#networkx.algorithms.chains.chain_decomposition
     touched = [node]
@@ -133,7 +131,7 @@ def leaf_node_finder(node):
         for i in list(to_search):
             to_search.remove(i)
             touched.append(str(i))
-            neighbors = new_neighbors(i, touched)
+            neighbors = new_neighbors(i, touched, nx_graph)
             if len(neighbors) == 0:
                 leaves.append(str(i))
             else:
@@ -142,48 +140,6 @@ def leaf_node_finder(node):
 
     return leaves
 
-
-# TODO: Is this really necessary? There must be something like this in numpy!
-def reshape_array(array, width):
-    size = array.size
-    length = size//width
-
-    array = array.reshape((length, width))
-
-    return array
-
-
-def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
-    # TODO: Extend color map
-    colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
-
-    filename = str(target_file) + ".dot"
-    output_file = open(filename, "w")
-
-    output_file.write("graph G {\n")
-
-    # Get all nodes, print those out
-    nodes = nx.nodes(graph_data)
-    for i in nodes:
-        output_file.write(str(i) + ";\n")
-
-    # Write each edge pair with generation marking
-    for i in edges:
-        if color == bool(True):
-            col = int(i[2]) - 1
-            col_str = " color = " + str(colors[col])
-        else:
-            col_str = ""
-        output_file.write(
-            str(i[0]) + "--" + str(i[1]) + " [ label = \"" + label + " " + str(i[2]) + "\"" + col_str + "];\n"
-        )
-
-    output_file.write("}")
-    output_file.close()
-
-    # Make PNG from graph
-    (output_graph,) = pydot.graph_from_dot_file(filename)
-    output_graph.write_png(str(target_file) + ".png")
 
 # TODO: Generate Statistics about output (e.g. freq with which order occurs)
 
@@ -214,24 +170,20 @@ if __name__ == '__main__':
         graph = read_graph(dotfile)
 
         if int(analysis_type) == 0:
-            edges_w_gens = generation_analysis(root_node)
-            edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output, False)
-            nrrd_writer.write(graph, dims, edges_w_gens, output)
+            graph_w_gens = generation_analysis(root_node, graph)
+            dot_writer.write(graph_w_gens, output, False, 'Gen')
+            nrrd_writer.write(graph_w_gens, dims, output, 'Gen')
         elif int(analysis_type) == 1:
-            edges_w_gens = order_analysis(root_node)
-            edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output, False, "Ord")
-            nrrd_writer.write(graph, dims, edges_w_gens, output)
+            graph_w_ord = order_analysis(root_node, graph)
+            dot_writer.write(graph_w_ord, output, False, 'Ord')
+            nrrd_writer.write(graph_w_ord, dims, output, 'Ord')
         elif int(analysis_type) == 2:
-            edges_w_gens = strahler_order(root_node)
-            # edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output, True, "Str_Ord")
-            nrrd_writer.write(graph, dims, edges_w_gens, output)
+            graph_w_sord = strahler_order(root_node, graph)
+            dot_writer.write(graph_w_sord, output, True, 'Str_Ord')
+            nrrd_writer.write(graph_w_sord, dims, output, )
         elif int(analysis_type) == 3:
-            edges_w_gens = give_id(root_node)
-            edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output, False, "Id")
-            nrrd_writer.write(graph, dims, edges_w_gens, output)
+            graph_w_ids = give_id(root_node, graph)
+            dot_writer.write(graph_w_ids, output, False, 'Id')
+            nrrd_writer.write(graph_w_ids, dims, output, 'Id')
         else:
             print("Analysis type not supported")
