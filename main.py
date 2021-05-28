@@ -1,4 +1,5 @@
 import networkx as nx
+import numpy as np
 import sys
 import nrrd_writer
 import dot_writer
@@ -75,9 +76,77 @@ def order_analysis(node, nx_graph):
 
 # TODO: Just like order, but after gen 1 only increment generation by one when two equal generations meet
 def strahler_order(node, nx_graph):
-    leaves = leaf_node_finder(node, nx_graph)
+    positions = leaf_node_finder(node, nx_graph)
+    visited = []
 
-    print("Not done yet")
+    # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
+    # We are done, when we reach the root node
+    while len(positions) != 1 or positions[0] != node:
+        add = []
+        rm = []
+        for position in positions:
+            neighbors = list(nx.neighbors(graph, position))
+            visited.append(position)
+
+            rm_n = []
+            for j in neighbors:
+                if j in visited:
+                    if j not in positions:
+                        rm_n.append(j)
+            for k in rm_n:
+                neighbors.remove(k)
+
+            if len(list(neighbors)) <= 1:
+                # Get neighbours of our node
+                pals = list(nx.neighbors(nx_graph, position))
+                # Get their orders
+                orders = []
+                for pal in pals:
+                    np.append(orders, 1)
+                    try:
+                        orders.append(nx_graph[str(position)][str(pal)][0]['Str_Ord'])
+                    except:
+                        continue
+
+                # If we have no existing orders, we start at 1 (position is a leaf node)
+                if len(orders) == 0:
+                    order = 1
+                # If there is only one previous order, there is no increase, we assign the previous order
+                elif len(orders) == 1:
+                    # Get their order
+                    order = orders[0]
+                # If we have multiple incoming nodes, he have to check for a possible increase
+                else:
+                    # Order values in array in descending order
+                    orders.sort()
+                    orders = orders[::-1]
+                    # If we have two equal orders, we increase the order by one
+                    if orders[0] == orders[1]:
+                        order = orders[0] + 1
+                    # If we have dissimilar orders, we continue with the highest one
+                    else:
+                        order = orders[0]
+
+                # Write new order into graph
+                nx_graph[str(position)][str(neighbors[0])][0]['Str_Ord'] = order
+
+                print(
+                    "The edge between node "
+                    + str(position) + " and "
+                    + str(neighbors[0])
+                    + " has strahler order " + str(order)
+                )
+                rm.append(position)
+                add.append(neighbors[0])
+
+        for i in add:
+            if i not in positions:
+                positions.append(i)
+
+        for i in rm:
+            positions.remove(i)
+            if i not in visited:
+                visited.append(i)
 
     return nx_graph
 
@@ -178,9 +247,9 @@ if __name__ == '__main__':
             dot_writer.write(graph_w_ord, output, False, 'Ord')
             nrrd_writer.write(graph_w_ord, dims, output, 'Ord')
         elif int(analysis_type) == 2:
-            graph_w_sord = strahler_order(root_node, graph)
-            dot_writer.write(graph_w_sord, output, True, 'Str_Ord')
-            nrrd_writer.write(graph_w_sord, dims, output, )
+            graph_w_str_ord = strahler_order(root_node, graph)
+            dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord')
+            nrrd_writer.write(graph_w_str_ord, dims, output, 'Str_Ord')
         elif int(analysis_type) == 3:
             graph_w_ids = give_id(root_node, graph)
             dot_writer.write(graph_w_ids, output, False, 'Id')
