@@ -154,6 +154,7 @@ def reshape_array(array, width):
 
 
 def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
+    # TODO: Extend color map
     colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
 
     filename = str(target_file) + ".dot"
@@ -184,6 +185,8 @@ def write_dot(graph_data, edges, target_file, color=True, label='Gen'):
     (output_graph,) = pydot.graph_from_dot_file(filename)
     output_graph.write_png(str(target_file) + ".png")
 
+# TODO: Generate Statistics about output (e.g. freq with which order occurs)
+
 
 if __name__ == '__main__':
     dotfile = sys.argv[1]
@@ -213,22 +216,22 @@ if __name__ == '__main__':
         if int(analysis_type) == 0:
             edges_w_gens = generation_analysis(root_node)
             edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output)
-            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
+            write_dot(graph, edges_w_gens, output, False)
+            nrrd_writer.write(graph, dims, edges_w_gens, output)
         elif int(analysis_type) == 1:
             edges_w_gens = order_analysis(root_node)
             edges_w_gens = reshape_array(edges_w_gens, 3)
-            write_dot(graph, edges_w_gens, output, True, "Ord")
-            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
+            write_dot(graph, edges_w_gens, output, False, "Ord")
+            nrrd_writer.write(graph, dims, edges_w_gens, output)
         elif int(analysis_type) == 2:
             edges_w_gens = strahler_order(root_node)
-            edges_w_gens = reshape_array(edges_w_gens, 3)
+            # edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output, True, "Str_Ord")
-            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
+            nrrd_writer.write(graph, dims, edges_w_gens, output)
         elif int(analysis_type) == 3:
             edges_w_gens = give_id(root_node)
             edges_w_gens = reshape_array(edges_w_gens, 3)
             write_dot(graph, edges_w_gens, output, False, "Id")
-            nrrd_writer.write(dotfile, dims, edges_w_gens, output)
+            nrrd_writer.write(graph, dims, edges_w_gens, output)
         else:
             print("Analysis type not supported")

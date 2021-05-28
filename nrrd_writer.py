@@ -1,14 +1,8 @@
 import numpy as np
 import nrrd
-import pydot
 
 
-def write(dot_graph, dims, edges, target_file):
-    # Read the (input!) graph (again...), as it contains the edge coordinates we need to write the .nrrd
-    # We need to do this, as the coordinates do not seem to be accessible from the networkx graph
-    # TODO: Look at networkx again to make sure there is no way to access these
-    graphs = pydot.graph_from_dot_file(dot_graph)
-    graph = graphs[0]
+def write(graph, dims, edges, target_file):
 
     # Initialize array in the needed size
     array = np.zeros(dims, dtype=np.ubyte)
@@ -20,21 +14,21 @@ def write(dot_graph, dims, edges, target_file):
         pos_arr = []
 
         # Get the coordinates of the starting point of the edge
-        node_0 = graph.get_node(str(i[0])).__getitem__(0).get('spatial_node')
+        node_0 = graph.node[str(i[0])]['spatial_node']
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
 
         # Get the coordinates of the end point of the edge
-        node_1 = graph.get_node(str(i[1])).__getitem__(0).get('spatial_node')
+        node_1 = graph.node[str(i[1])]['spatial_node']
         node_1 = node_1.replace('"', '')
         coords = node_1.split(' ')
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge = graph.get_edge(str(i[0]), str(i[1])).__getitem__(0).get('spatial_edge')
+        edge = graph[str(i[0])][str(i[1])][0]['spatial_edge']
         # TODO: The return looks like a json array, but using a json parser does not work
-        # As this is a pretty simple string cleanup we do it by hand to safe time
+        # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
         for j in to_replace:
             edge = edge.replace(j, '')
@@ -48,9 +42,9 @@ def write(dot_graph, dims, edges, target_file):
             pos_arr.append(coords)
 
         # Now that we have all coordinates our edge consists of, we can set these to the edge label in our array
-        # print(pos_arr)
         for j in pos_arr:
-            # TODO: Sometimes there is an empty array here
+            # When two nodes border each other, the edge has no coordinates (length = 0)
+            # So if the array we receive is empty, we can just move on to the next one
             if j[0] == '':
                 continue
             else:
