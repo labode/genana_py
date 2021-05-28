@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+import math
 import sys
 import nrrd_writer
 import dot_writer
@@ -212,6 +213,61 @@ def leaf_node_finder(node, nx_graph):
 
 # TODO: Generate Statistics about output (e.g. freq with which order occurs)
 
+def length_calculator(nx_graph):
+
+    # get all edges
+    edges = list(nx.edges(graph))
+
+    for edge in edges:
+        pos_arr = []
+
+        # Get the coordinates of the starting point of the edge
+        node_0 = graph.node[str(edge[0])]['spatial_node']
+        node_0 = node_0.replace('"', '')
+        coords = node_0.split(' ')
+        pos_arr.append(coords)
+
+        # Get all coordinates along the edge between start and end point
+        edge_points = graph[str(edge[0])][str(edge[1])][0]['spatial_edge']
+        # TODO: The return looks like a json array, but using a json parser does not work
+        # As this is a pretty simple string cleanup we do it by hand to save time
+        to_replace = ['"', '[', ']', '{', '}']
+        for j in to_replace:
+            edge_points = edge_points.replace(j, '')
+
+        # As we potentially get multiple coordinates, we need to separate them
+        edge_coords = edge_points.split(',')
+
+        # Now we have a list with three values as each entry. We split them again, to get an array of 3d coordinates
+        for j in edge_coords:
+            coords = j.split(' ')
+            pos_arr.append(coords)
+
+        # Get the coordinates of the end point of the edge
+        node_1 = graph.node[str(edge[1])]['spatial_node']
+        node_1 = node_1.replace('"', '')
+        coords = node_1.split(' ')
+        pos_arr.append(coords)
+
+        # Now that we have all coordinates our edge consists of, we can calculate the overall length
+        length = 0
+        start = []
+        for pos in pos_arr:
+            # When two nodes border each other, the edge has no coordinates (length = 0)
+            # So if the array we receive is empty, we can just move on to the next one
+            if pos[0] == '':
+                continue
+            else:
+                # When we have a starting point, we can begin to calculate distances
+                if len(start) != 0:
+                    length += math.sqrt((start[0] - pos[0]) ** 2 + (start[1] - pos[1]) ** 2 + (start[2] - pos[2]) ** 2)
+
+                start = [pos[0], pos[1], pos[2]]
+
+        nx_graph[str(node_0)][str(node_1)][0]['Length'] = length
+
+    return nx_graph
+
 
 if __name__ == '__main__':
     dotfile = sys.argv[1]
@@ -254,5 +310,6 @@ if __name__ == '__main__':
             graph_w_ids = give_id(root_node, graph)
             dot_writer.write(graph_w_ids, output, False, 'Id')
             nrrd_writer.write(graph_w_ids, dims, output, 'Id')
+        # TODO: Run all analysis types consecutively and write results to .csv
         else:
             print("Analysis type not supported")
