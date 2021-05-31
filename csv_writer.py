@@ -17,7 +17,7 @@ def write(graph, target_file, labels):
     # Get all edges
     edges = list(nx.edges(graph))
     for edge in edges:
-        output_file.write(str(edge[0]) + ' ;' + edge[1] + ';')
+        output_file.write(edge[0] + '; ' + edge[1] + ';')
         # Write each labels content
         for label in labels:
             output_file.write(' ' + str(graph[edge[0]][edge[1]][0][label]) + ';')

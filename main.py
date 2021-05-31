@@ -4,6 +4,7 @@ import math
 import sys
 import nrrd_writer
 import dot_writer
+import csv_writer
 
 
 def read_graph(file):
@@ -260,11 +261,13 @@ def length_calculator(nx_graph):
             else:
                 # When we have a starting point, we can begin to calculate distances
                 if len(start) != 0:
-                    length += math.sqrt((start[0] - pos[0]) ** 2 + (start[1] - pos[1]) ** 2 + (start[2] - pos[2]) ** 2)
+                    length += math.sqrt((int(start[0]) - int(pos[0])) ** 2
+                                        + (int(start[1]) - int(pos[1])) ** 2
+                                        + (int(start[2]) - int(pos[2])) ** 2)
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(node_0)][str(node_1)][0]['Length'] = round(length, 4)
+        nx_graph[str(edge[0])][str(edge[1])][0]['Length'] = round(length, 4)
 
     return nx_graph
 
@@ -311,5 +314,9 @@ if __name__ == '__main__':
             dot_writer.write(graph_w_ids, output, False, 'Id')
             nrrd_writer.write(graph_w_ids, dims, output, 'Id')
         # TODO: Run all analysis types consecutively and write results to .csv
+        elif int(analysis_type) == 4:
+            graph_w_str_ord = strahler_order(root_node, graph)
+            graph_w_length = length_calculator(graph_w_str_ord)
+            csv_writer.write(graph_w_length, 'strord_vs_length', ['Str_Ord', 'Length'])
         else:
             print("Analysis type not supported")
