@@ -1,5 +1,4 @@
 import networkx as nx
-import numpy as np
 import math
 import sys
 import nrrd_writer
@@ -56,7 +55,7 @@ def order_analysis(node, nx_graph):
             for k in rm_n:
                 neighbors.remove(k)
 
-            if len(list(neighbors)) <= 1:
+            if len(list(neighbors)) == 1:
                 print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has order " + str(order))
                 nx_graph[str(i)][str(neighbors[0])][0]['Ord'] = order
                 rm.append(i)
@@ -76,7 +75,7 @@ def order_analysis(node, nx_graph):
     return nx_graph
 
 
-# TODO: Just like order, but after gen 1 only increment generation by one when two equal generations meet
+# Just like order, but after gen 1 only increment generation by one when two equal generations meet
 def strahler_order(node, nx_graph):
     positions = leaf_node_finder(node, nx_graph)
     visited = []
@@ -98,15 +97,17 @@ def strahler_order(node, nx_graph):
             for k in rm_n:
                 neighbors.remove(k)
 
-            if len(list(neighbors)) <= 1:
+            if len(list(neighbors)) == 1:
                 # Get neighbours of our node
-                pals = list(nx.neighbors(nx_graph, position))
+                bordering = list(nx.neighbors(nx_graph, position))
+
                 # Get their orders
                 orders = []
-                for pal in pals:
-                    np.append(orders, 1)
+                for point in bordering:
+                    # Try block is needed, as we can not access a label, if it has not been assigned yet
+                    # => would throw an error when starting at leaf nodes
                     try:
-                        orders.append(nx_graph[str(position)][str(pal)][0]['Str_Ord'])
+                        orders.append(nx_graph[str(position)][str(point)][0]['Str_Ord'])
                     except:
                         continue
 
