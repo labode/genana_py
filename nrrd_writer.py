@@ -6,7 +6,12 @@ import nrrd
 def write(graph, dims, target_file, label='Gen'):
 
     # Initialize array in the needed size
-    array = np.zeros(dims, dtype=np.ubyte)
+    if label == 'Id':
+        # While our number of generations/Orders is far below 256, ids go well above that
+        # So in this case we need more storage space
+        array = np.zeros(dims, dtype=np.ushort)
+    else:
+        array = np.zeros(dims, dtype=np.ubyte)
 
     # Now the easy part: Get the coordinates of all edges
     # and write the label id in the corresponding position in the array
@@ -51,7 +56,10 @@ def write(graph, dims, target_file, label='Gen'):
             if j[0] == '':
                 continue
             else:
-                array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][0][label]))
+                if label == 'Id':
+                    array[int(j[0]), int(j[1]), int(j[2])] = np.ushort(int(graph[edge[0]][edge[1]][0][label]))
+                else:
+                    array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][0][label]))
 
     # Set filename to write into
     filename = str(target_file) + ".nrrd"
