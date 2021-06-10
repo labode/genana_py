@@ -314,10 +314,13 @@ if __name__ == '__main__':
             graph_w_ids = give_id(root_node, graph)
             dot_writer.write(graph_w_ids, output, False, 'Id')
             nrrd_writer.write(graph_w_ids, dims, output, 'Id')
-        # TODO: Run all analysis types consecutively and write results to .csv
+        # Run all analysis types consecutively and write results to .csv
         elif int(analysis_type) == 4:
-            graph_w_str_ord = strahler_order(root_node, graph)
+            graph_w_ids = give_id(root_node, graph)
+            graph_w_gens = generation_analysis(root_node, graph_w_ids)
+            graph_w_ord = order_analysis(root_node, graph_w_gens)
+            graph_w_str_ord = strahler_order(root_node, graph_w_ord)
             graph_w_length = length_calculator(graph_w_str_ord)
-            csv_writer.write(graph_w_length, 'strord_vs_length', ['Str_Ord', 'Length'])
+            csv_writer.write(graph_w_length, 'global', ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
         else:
             print("Analysis type not supported")
