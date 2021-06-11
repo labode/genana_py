@@ -14,7 +14,7 @@ Build to work on GraphViz output from https://github.com/phcerdan/SGEXT
 ## Output
 - .dot graph
 - .png image of graph
-- .nrrd representation of graph (can be strtched back over initial volume image thinned by SGEXT)
+- .nrrd representation of graph (can be stretched back over initial volume image thinned by SGEXT)
 - .csv containing graph data
 
 ## Usage
@@ -25,9 +25,9 @@ Build to work on GraphViz output from https://github.com/phcerdan/SGEXT
 - 3 = ID assignment (Output = .dot, .png, .nrrd)
 - 4 = Comparative analysis (Does all the classification methods plus edge length analysis, outputs results as .csv)
 
-`python main.py graph.dot, outputfile, analysis mode (number), label root node, volume dimension x, volume dimension y, volume dimension z`
+`python main.py graph.dot, outputfile, analysis mode (number), label root node, volume dimension x, volume dimension y, volume dimension z, offset x, offset y, offset z, voxel size`
 
 ### Example
-For an Order analysis of the file graph.dot, target = test_run, root node = 0, volume size = 10 * 10 * 10 voxels
-`python main.py graph.dot, test_run, 1, 0, 10, 10, 10`
+For an Order analysis of the file graph.dot, target = test_run, root node = 0, volume size = 10 * 10 * 10 voxels, offset = 0, 0, 0 voxels, voxel size = 2 um
+`python main.py graph.dot, test_run, 1, 0, 10, 10, 10, 0, 0, 0, 2`
 

@@ -3,7 +3,7 @@ import networkx as nx
 import nrrd
 
 
-def write(graph, dims, target_file, label='Gen'):
+def write(graph, dims, off, voxel_size, target_file, label='Gen'):
 
     # Initialize array in the needed size
     if label == 'Id':
@@ -65,13 +65,12 @@ def write(graph, dims, target_file, label='Gen'):
     filename = str(target_file) + ".nrrd"
 
     # Define header values (see https://pynrrd.readthedocs.io/en/latest/examples.html)
-    # TODO: Precision in space directions correct? Let user supply value somewhere? Parse from .mha?
     header = {'kinds': ['domain', 'domain', 'domain'],
               'space': 'left-posterior-superior',
               'space origin':
-                  np.array([0, 0, 660]),
+                  np.array(off),
               'space directions':
-                  np.array([[4.4000000000000004, 0, 0], [0, 4.4000000000000004, 0], [0, 0, 4.4000000000000004]]),
+                  np.array([[voxel_size, 0, 0], [0, voxel_size, 0], [0, 0, voxel_size]]),
               'encoding': 'raw'}
 
     # write our array into a .nrrd file

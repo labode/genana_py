@@ -284,15 +284,24 @@ if __name__ == '__main__':
     dim_z = sys.argv[7]
     dims = [int(dim_x), int(dim_y), int(dim_z)]
 
+    off_x = sys.argv[8]
+    off_y = sys.argv[9]
+    off_z = sys.argv[10]
+    off = [int(off_x), int(off_y), int(off_z)]
+
+    voxel_size = sys.argv[11]
+
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
     error = False
 
-    if not dotfile or not output or not analysis_type or not root_node or not dim_x or not dim_y or not dim_z:
+    if not dotfile or not output or not analysis_type or not root_node or not dim_x or not dim_y or not dim_z \
+            or not off_x or not off_y or not off_z or not voxel_size:
         # TODO: Check types of inputs
         print("Missing parameters")
         # Explain the needed parameters to the user
-        print("Please supply: dotfile, output_filename, analysis_type (0-3), root_node, x, y, z")
+        print("Please supply: dotfile, output_filename, analysis_type (0-3), root_node, x dim, y dim, z dim,"
+              "x offset, y offset, z offset, pixel size")
         error = True
 
     if not error:
@@ -301,15 +310,15 @@ if __name__ == '__main__':
         if int(analysis_type) == 0:
             graph_w_gens = generation_analysis(root_node, graph)
             dot_writer.write(graph_w_gens, output, False, 'Gen')
-            nrrd_writer.write(graph_w_gens, dims, output, 'Gen')
+            nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
         elif int(analysis_type) == 1:
             graph_w_ord = order_analysis(root_node, graph)
             dot_writer.write(graph_w_ord, output, False, 'Ord')
-            nrrd_writer.write(graph_w_ord, dims, output, 'Ord')
+            nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
         elif int(analysis_type) == 2:
             graph_w_str_ord = strahler_order(root_node, graph)
             dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord')
-            nrrd_writer.write(graph_w_str_ord, dims, output, 'Str_Ord')
+            nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
         elif int(analysis_type) == 3:
             graph_w_ids = give_id(root_node, graph)
             dot_writer.write(graph_w_ids, output, False, 'Id')
