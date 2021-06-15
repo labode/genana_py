@@ -296,25 +296,31 @@ if __name__ == '__main__':
         sys.exit('Missing parameters \nPlease supply: dotfile, output_filename, analysis_type (0-4), root_node,'
                  'x dim, y dim, z dim, x offset, y offset, z offset, pixel size')
 
+    # Color map is optional
+    try:
+        color_map = sys.argv[12]
+    except IndexError:
+        color_map = ''
+
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
     graph = read_graph(dotfile)
 
     if int(analysis_type) == 0:
         graph_w_gens = generation_analysis(root_node, graph)
-        dot_writer.write(graph_w_gens, output, False, 'Gen')
+        dot_writer.write(graph_w_gens, output, False, 'Gen', color_map)
         nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
     elif int(analysis_type) == 1:
         graph_w_ord = order_analysis(root_node, graph)
-        dot_writer.write(graph_w_ord, output, False, 'Ord')
+        dot_writer.write(graph_w_ord, output, False, 'Ord', color_map)
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif int(analysis_type) == 2:
         graph_w_str_ord = strahler_order(root_node, graph)
-        dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord')
+        dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord', color_map)
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif int(analysis_type) == 3:
         graph_w_ids = give_id(root_node, graph)
-        dot_writer.write(graph_w_ids, output, False, 'Id')
+        dot_writer.write(graph_w_ids, output, False, 'Id', color_map)
         nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
     elif int(analysis_type) == 4:

@@ -1,11 +1,35 @@
 import numpy as np
 import networkx as nx
 import pydot
+import csv
 
 
-def write(graph, target_file, color=True, label='Gen'):
-    # TODO: Extend color map
-    colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
+def read_colormap(colormap):
+    colors = []
+
+    with open(colormap) as csv_file:
+        reader = csv.reader(csv_file, delimiter=',')
+        for row in reader:
+            # We exclude white as a label color as we are printing on a white background
+            if row[0] == '0' and row[1] == '0' and row[2] == '0':
+                continue
+
+            # Convert to hex code (and invert to match it to the later interpretation in makefile)
+            r = hex(255 - int(row[0]))
+            g = hex(255 - int(row[1]))
+            b = hex(255 - int(row[2]))
+
+            # Add leading # and remove leading 0x from hex
+            colors.append('#' + r[2:] + g[2:] + b[2:])
+
+    return colors
+
+
+def write(graph, target_file, color=True, label='Gen', colormap=''):
+    if len(colormap) == 0:
+        colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
+    else:
+        colors = read_colormap(colormap)
 
     filename = str(target_file) + ".dot"
     output_file = open(filename, "w")
