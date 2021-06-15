@@ -274,63 +274,56 @@ def calculate_length(nx_graph):
 
 
 if __name__ == '__main__':
-    dotfile = sys.argv[1]
-    output = sys.argv[2]
-    analysis_type = sys.argv[3]
-    root_node = sys.argv[4]
+    try:
+        dotfile = sys.argv[1]
+        output = sys.argv[2]
+        analysis_type = sys.argv[3]
+        root_node = sys.argv[4]
 
-    dim_x = sys.argv[5]
-    dim_y = sys.argv[6]
-    dim_z = sys.argv[7]
-    dims = [int(dim_x), int(dim_y), int(dim_z)]
+        dim_x = sys.argv[5]
+        dim_y = sys.argv[6]
+        dim_z = sys.argv[7]
+        dims = [int(dim_x), int(dim_y), int(dim_z)]
 
-    off_x = sys.argv[8]
-    off_y = sys.argv[9]
-    off_z = sys.argv[10]
-    off = [int(off_x), int(off_y), int(off_z)]
+        off_x = sys.argv[8]
+        off_y = sys.argv[9]
+        off_z = sys.argv[10]
+        off = [int(off_x), int(off_y), int(off_z)]
 
-    voxel_size = sys.argv[11]
+        voxel_size = sys.argv[11]
+
+    except IndexError:
+        sys.exit('Missing parameters \nPlease supply: dotfile, output_filename, analysis_type (0-4), root_node,'
+                 'x dim, y dim, z dim, x offset, y offset, z offset, pixel size')
 
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
-    error = False
+    graph = read_graph(dotfile)
 
-    if not dotfile or not output or not analysis_type or not root_node or not dim_x or not dim_y or not dim_z \
-            or not off_x or not off_y or not off_z or not voxel_size:
-        # TODO: Check types of inputs
-        print("Missing parameters")
-        # Explain the needed parameters to the user
-        print("Please supply: dotfile, output_filename, analysis_type (0-3), root_node, x dim, y dim, z dim,"
-              "x offset, y offset, z offset, pixel size")
-        error = True
-
-    if not error:
-        graph = read_graph(dotfile)
-
-        if int(analysis_type) == 0:
-            graph_w_gens = generation_analysis(root_node, graph)
-            dot_writer.write(graph_w_gens, output, False, 'Gen')
-            nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
-        elif int(analysis_type) == 1:
-            graph_w_ord = order_analysis(root_node, graph)
-            dot_writer.write(graph_w_ord, output, False, 'Ord')
-            nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
-        elif int(analysis_type) == 2:
-            graph_w_str_ord = strahler_order(root_node, graph)
-            dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord')
-            nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
-        elif int(analysis_type) == 3:
-            graph_w_ids = give_id(root_node, graph)
-            dot_writer.write(graph_w_ids, output, False, 'Id')
-            nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
-        # Run all analysis types consecutively and write results to .csv
-        elif int(analysis_type) == 4:
-            graph_w_ids = give_id(root_node, graph)
-            graph_w_gens = generation_analysis(root_node, graph_w_ids)
-            graph_w_ord = order_analysis(root_node, graph_w_gens)
-            graph_w_str_ord = strahler_order(root_node, graph_w_ord)
-            # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
-            graph_w_length = calculate_length(graph_w_str_ord)
-            csv_writer.write(graph_w_length, 'global', ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
-        else:
-            print("Analysis type not supported")
+    if int(analysis_type) == 0:
+        graph_w_gens = generation_analysis(root_node, graph)
+        dot_writer.write(graph_w_gens, output, False, 'Gen')
+        nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
+    elif int(analysis_type) == 1:
+        graph_w_ord = order_analysis(root_node, graph)
+        dot_writer.write(graph_w_ord, output, False, 'Ord')
+        nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
+    elif int(analysis_type) == 2:
+        graph_w_str_ord = strahler_order(root_node, graph)
+        dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord')
+        nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
+    elif int(analysis_type) == 3:
+        graph_w_ids = give_id(root_node, graph)
+        dot_writer.write(graph_w_ids, output, False, 'Id')
+        nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
+    # Run all analysis types consecutively and write results to .csv
+    elif int(analysis_type) == 4:
+        graph_w_ids = give_id(root_node, graph)
+        graph_w_gens = generation_analysis(root_node, graph_w_ids)
+        graph_w_ord = order_analysis(root_node, graph_w_gens)
+        graph_w_str_ord = strahler_order(root_node, graph_w_ord)
+        # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
+        graph_w_length = calculate_length(graph_w_str_ord)
+        csv_writer.write(graph_w_length, 'global', ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
+    else:
+        print("Analysis type not supported")
