@@ -22,7 +22,7 @@ def generation_analysis(node, nx_graph):
         nn = []
         for i in nodes:
             visited.append(i)
-            neighbors = new_neighbors(i, visited, nx_graph)
+            neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
                 nx_graph[str(i)][str(j)][0]['Gen'] = gen
@@ -34,7 +34,7 @@ def generation_analysis(node, nx_graph):
 
 
 def order_analysis(node, nx_graph):
-    pos = leaf_node_finder(node, nx_graph)
+    pos = find_leaf_nodes(node, nx_graph)
     visited = []
     order = 1
 
@@ -77,7 +77,7 @@ def order_analysis(node, nx_graph):
 
 # Just like order, but after gen 1 only increment generation by one when two equal generations meet
 def strahler_order(node, nx_graph):
-    positions = leaf_node_finder(node, nx_graph)
+    positions = find_leaf_nodes(node, nx_graph)
     visited = []
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
@@ -108,7 +108,7 @@ def strahler_order(node, nx_graph):
                     # => would throw an error when starting at leaf nodes
                     try:
                         orders.append(nx_graph[str(position)][str(point)][0]['Str_Ord'])
-                    except:
+                    except IndexError:
                         continue
 
                 # If we have no existing orders, we start at 1 (position is a leaf node)
@@ -166,7 +166,7 @@ def give_id(node, nx_graph):
         nn = []
         for i in nodes:
             visited.append(i)
-            neighbors = new_neighbors(i, visited, nx_graph)
+            neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
                 nx_graph[str(i)][str(j)][0]['Id'] = unique_id
@@ -178,7 +178,7 @@ def give_id(node, nx_graph):
 
 
 # Return all neighbors excluding old (already known) ones (supplied in a list)
-def new_neighbors(node, known, nx_graph):
+def find_new_neighbors(node, known, nx_graph):
     discovered = []
 
     neighbors = nx.neighbors(nx_graph, node)
@@ -192,7 +192,7 @@ def new_neighbors(node, known, nx_graph):
 
 
 # Find the leaf nodes => Walk through tree til you can't walk no more
-def leaf_node_finder(node, nx_graph):
+def find_leaf_nodes(node, nx_graph):
     # TODO: read this maybe for more efficiency
     # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chains.chain_decomposition.html#networkx.algorithms.chains.chain_decomposition
     touched = [node]
@@ -203,7 +203,7 @@ def leaf_node_finder(node, nx_graph):
         for i in list(to_search):
             to_search.remove(i)
             touched.append(str(i))
-            neighbors = new_neighbors(i, touched, nx_graph)
+            neighbors = find_new_neighbors(i, touched, nx_graph)
             if len(neighbors) == 0:
                 leaves.append(str(i))
             else:
@@ -215,7 +215,7 @@ def leaf_node_finder(node, nx_graph):
 
 # TODO: Generate Statistics about output (e.g. freq with which order occurs)
 
-def length_calculator(nx_graph):
+def calculate_length(nx_graph):
 
     # get all edges
     edges = list(nx.edges(graph))
@@ -322,14 +322,15 @@ if __name__ == '__main__':
         elif int(analysis_type) == 3:
             graph_w_ids = give_id(root_node, graph)
             dot_writer.write(graph_w_ids, output, False, 'Id')
-            nrrd_writer.write(graph_w_ids, dims, output, 'Id')
+            nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
         # Run all analysis types consecutively and write results to .csv
         elif int(analysis_type) == 4:
             graph_w_ids = give_id(root_node, graph)
             graph_w_gens = generation_analysis(root_node, graph_w_ids)
             graph_w_ord = order_analysis(root_node, graph_w_gens)
             graph_w_str_ord = strahler_order(root_node, graph_w_ord)
-            graph_w_length = length_calculator(graph_w_str_ord)
+            # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
+            graph_w_length = calculate_length(graph_w_str_ord)
             csv_writer.write(graph_w_length, 'global', ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
         else:
             print("Analysis type not supported")
