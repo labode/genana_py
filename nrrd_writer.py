@@ -70,7 +70,7 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
               'space origin':
                   np.array(off),
               'space directions':
-                  np.array([[voxel_size, 0, 0], [0, voxel_size, 0], [0, 0, voxel_size]]),
+                  np.array([[float(voxel_size), 0, 0], [0, float(voxel_size), 0], [0, 0, float(voxel_size)]]),
               'encoding': 'raw'}
 
     # write our array into a .nrrd file
