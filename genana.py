@@ -330,6 +330,6 @@ if __name__ == '__main__':
         graph_w_str_ord = strahler_order(root_node, graph_w_ord)
         # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
         graph_w_length = calculate_length(graph_w_str_ord)
-        csv_writer.write(graph_w_length, 'global', ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
+        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
     else:
         print("Analysis type not supported")
