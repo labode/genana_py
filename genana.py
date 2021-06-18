@@ -273,32 +273,47 @@ if __name__ == '__main__':
 
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
+    print('Reading graph')
     graph = read_graph(dotfile)
 
     if int(analysis_type) == 0:
+        print('Performing Generation analysis')
         graph_w_gens = generation_analysis(root_node, graph)
+        print('Writing .dot')
         dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map)
+        print('Writing .nrrd')
         nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
     elif int(analysis_type) == 1:
+        print('Performing Order analysis')
         graph_w_ord = order_analysis(root_node, graph)
+        print('Writing .dot')
         dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map)
+        print('Writing .nrrd')
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif int(analysis_type) == 2:
+        print('Performing Strahler order analysis')
         graph_w_str_ord = strahler_order(root_node, graph)
+        print('Writing .dot')
         dot_writer.write(graph_w_str_ord, output, root_node, True, 'Str_Ord', color_map)
+        print('Writing .nrrd')
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif int(analysis_type) == 3:
+        print('Performing Id analysis')
         graph_w_ids = give_id(root_node, graph)
+        print('Writing .dot')
         dot_writer.write(graph_w_ids, output, root_node, False, 'Id', color_map)
+        print('Writing .nrrd')
         nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
     elif int(analysis_type) == 4:
+        print('Performing global analysis')
         graph_w_ids = give_id(root_node, graph)
         graph_w_gens = generation_analysis(root_node, graph_w_ids)
         graph_w_ord = order_analysis(root_node, graph_w_gens)
         graph_w_str_ord = strahler_order(root_node, graph_w_ord)
-        # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
+        print('Calculating length')
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
+        print('Writing .csv')
         csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
     else:
         print("Analysis type not supported")
