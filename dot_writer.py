@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from node_finder import find_new_neighbors
 import pydot
 import csv
 
@@ -25,7 +26,7 @@ def read_colormap(colormap):
     return colors
 
 
-def write(graph, target_file, color=True, label='Gen', colormap=''):
+def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''):
     if len(colormap) == 0:
         colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
     else:
@@ -37,23 +38,32 @@ def write(graph, target_file, color=True, label='Gen', colormap=''):
     output_file.write("graph G {\n")
 
     # Get all nodes, print those out
-    nodes = nx.nodes(graph)
+    nodes = nx.nodes(nx_graph)
     for i in nodes:
         output_file.write(str(i) + ";\n")
 
-    # Write each edge pair with generation marking
-    edges = list(nx.edges(graph))
-    for edge in edges:
-        if color == bool(True):
-            col = int(graph[edge[0]][edge[1]][0][label]) - 1
-            col_str = " color = " + str(colors[col])
-        else:
-            col_str = ""
-        output_file.write(
-            str(edge[0]) + "--" + str(edge[1]) +
-            " [ label = \"" + label + " " + str(graph[edge[0]][edge[1]][0][label]) +
-            "\"" + col_str + "];\n"
-        )
+    # Write each edge pair with generation marking, hierarchically ordered
+    visited = [root_node]
+    nodes = [root_node]
+
+    while len(nodes) != 0:
+        nn = []
+        for i in nodes:
+            visited.append(i)
+            neighbors = find_new_neighbors(i, visited, nx_graph)
+            for j in neighbors:
+                if color == bool(True):
+                    col = int(nx_graph[i][j][0][label]) - 1
+                    col_str = " color = " + str(colors[col])
+                else:
+                    col_str = ""
+                output_file.write(
+                    str(i) + "--" + str(j) +
+                    " [ label = \"" + label + " " + str(nx_graph[i][j][0][label]) +
+                    "\"" + col_str + "];\n"
+                )
+                nn.append(j)
+        nodes = nn
 
     output_file.write("}")
     output_file.close()

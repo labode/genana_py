@@ -4,6 +4,7 @@ import sys
 import nrrd_writer
 import dot_writer
 import csv_writer
+from node_finder import find_new_neighbors, find_leaf_nodes
 
 
 def read_graph(file):
@@ -108,7 +109,7 @@ def strahler_order(node, nx_graph):
                     # => would throw an error when starting at leaf nodes
                     try:
                         orders.append(nx_graph[str(position)][str(point)][0]['Str_Ord'])
-                    except IndexError:
+                    except KeyError:
                         continue
 
                 # If we have no existing orders, we start at 1 (position is a leaf node)
@@ -176,44 +177,6 @@ def give_id(node, nx_graph):
 
     return nx_graph
 
-
-# Return all neighbors excluding old (already known) ones (supplied in a list)
-def find_new_neighbors(node, known, nx_graph):
-    discovered = []
-
-    neighbors = nx.neighbors(nx_graph, node)
-    for i in list(neighbors):
-        if i in known:
-            continue
-        else:
-            discovered.append(str(i))
-
-    return discovered
-
-
-# Find the leaf nodes => Walk through tree til you can't walk no more
-def find_leaf_nodes(node, nx_graph):
-    # TODO: read this maybe for more efficiency
-    # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chains.chain_decomposition.html#networkx.algorithms.chains.chain_decomposition
-    touched = [node]
-    to_search = [node]
-    leaves = []
-
-    while len(to_search) > 0:
-        for i in list(to_search):
-            to_search.remove(i)
-            touched.append(str(i))
-            neighbors = find_new_neighbors(i, touched, nx_graph)
-            if len(neighbors) == 0:
-                leaves.append(str(i))
-            else:
-                for j in neighbors:
-                    to_search.append(j)
-
-    return leaves
-
-
-# TODO: Generate Statistics about output (e.g. freq with which order occurs)
 
 def calculate_length(nx_graph):
 
@@ -283,18 +246,24 @@ if __name__ == '__main__':
         dim_x = sys.argv[5]
         dim_y = sys.argv[6]
         dim_z = sys.argv[7]
+
         dims = [int(dim_x), int(dim_y), int(dim_z)]
 
         off_x = sys.argv[8]
         off_y = sys.argv[9]
         off_z = sys.argv[10]
-        off = [int(off_x), int(off_y), int(off_z)]
 
-        voxel_size = sys.argv[11]
+        off = [int(off_x), int(off_y), int(off_z)]
 
     except IndexError:
         sys.exit('Missing parameters \nPlease supply: dotfile, output_filename, analysis_type (0-4), root_node,'
-                 'x dim, y dim, z dim, x offset, y offset, z offset, pixel size')
+                 'x dim, y dim, z dim, x offset, y offset, z offset')
+
+    try:
+        voxel_size = sys.argv[11]
+    except IndexError:
+        voxel_size = 1
+        print('No voxel size supplied, length output will be in voxel units')
 
     # Color map is optional
     try:
@@ -308,19 +277,19 @@ if __name__ == '__main__':
 
     if int(analysis_type) == 0:
         graph_w_gens = generation_analysis(root_node, graph)
-        dot_writer.write(graph_w_gens, output, False, 'Gen', color_map)
+        dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map)
         nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
     elif int(analysis_type) == 1:
         graph_w_ord = order_analysis(root_node, graph)
-        dot_writer.write(graph_w_ord, output, False, 'Ord', color_map)
+        dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map)
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif int(analysis_type) == 2:
         graph_w_str_ord = strahler_order(root_node, graph)
-        dot_writer.write(graph_w_str_ord, output, False, 'Str_Ord', color_map)
+        dot_writer.write(graph_w_str_ord, output, root_node, False, 'Str_Ord', color_map)
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif int(analysis_type) == 3:
         graph_w_ids = give_id(root_node, graph)
-        dot_writer.write(graph_w_ids, output, False, 'Id', color_map)
+        dot_writer.write(graph_w_ids, output, root_node, False, 'Id', color_map)
         nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
     elif int(analysis_type) == 4:
