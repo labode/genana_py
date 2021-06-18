@@ -178,7 +178,7 @@ def give_id(node, nx_graph):
     return nx_graph
 
 
-def calculate_length(nx_graph):
+def calculate_length(nx_graph, size):
 
     # get all edges
     edges = list(nx.edges(graph))
@@ -231,7 +231,7 @@ def calculate_length(nx_graph):
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(edge[0])][str(edge[1])][0]['Length'] = round(length, 4)
+        nx_graph[str(edge[0])][str(edge[1])][0]['Length'] = round(length * float(size), 4)
 
     return nx_graph
 
@@ -263,7 +263,7 @@ if __name__ == '__main__':
         voxel_size = sys.argv[11]
     except IndexError:
         voxel_size = 1
-        print('No voxel size supplied, length output will be in voxel units')
+        print('No voxel size supplied, 1 will be used for .nrrd header and length calculations')
 
     # Color map is optional
     try:
@@ -285,7 +285,7 @@ if __name__ == '__main__':
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif int(analysis_type) == 2:
         graph_w_str_ord = strahler_order(root_node, graph)
-        dot_writer.write(graph_w_str_ord, output, root_node, False, 'Str_Ord', color_map)
+        dot_writer.write(graph_w_str_ord, output, root_node, True, 'Str_Ord', color_map)
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif int(analysis_type) == 3:
         graph_w_ids = give_id(root_node, graph)
@@ -298,7 +298,7 @@ if __name__ == '__main__':
         graph_w_ord = order_analysis(root_node, graph_w_gens)
         graph_w_str_ord = strahler_order(root_node, graph_w_ord)
         # TODO: We now request the voxel size from the user, so we could use it for the length calculation!
-        graph_w_length = calculate_length(graph_w_str_ord)
+        graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
         csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
     else:
         print("Analysis type not supported")

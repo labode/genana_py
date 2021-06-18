@@ -27,10 +27,13 @@ def read_colormap(colormap):
 
 
 def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''):
+    # TODO: Check if colormap has enough entries to be used with the given graph?
     if len(colormap) == 0:
         colors = np.array(["red", "green", "blue", "yellow", "cyan", "magenta"], str)
     else:
         colors = read_colormap(colormap)
+        # If a color map has been supplied, we can be sure that a colored output is requested
+        color = True
 
     filename = str(target_file) + ".dot"
     output_file = open(filename, "w")
