@@ -8,7 +8,7 @@ Build to work on GraphViz output from https://github.com/phcerdan/SGEXT
 - Outputs labeled graph (.dot and .nrrd) or analysis results as .csv
 
 ## Input
-- .dot graph containing nodes, edges and coordinate labels
+- .dot graph containing nodes, edges and coordinate labels (graph **must** be a (rooted) tree i.e. may **not** contain any parallel edges/circular paths in the graph)
 - output filename
 - Analysis mode
 - Volume size

@@ -8,7 +8,7 @@ from node_finder import find_new_neighbors, find_leaf_nodes
 
 
 def read_graph(file):
-    # Read graph from .dot file using pydot and turn it into a networkx graph
+    # Read graph from .dot file and turn it into a networkx graph
     dot_graph = nx.drawing.nx_pydot.read_dot(file)
 
     return dot_graph
