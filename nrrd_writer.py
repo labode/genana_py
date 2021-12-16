@@ -34,7 +34,7 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge_points = graph[str(edge[0])][str(edge[1])][0]['spatial_edge']
+        edge_points = graph[str(edge[0])][str(edge[1])]['spatial_edge']
         # TODO: The return looks like a json array, but using a json parser does not work
         # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
@@ -57,9 +57,9 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
                 continue
             else:
                 if label == 'Id':
-                    array[int(j[0]), int(j[1]), int(j[2])] = np.ushort(int(graph[edge[0]][edge[1]][0][label]))
+                    array[int(j[0]), int(j[1]), int(j[2])] = np.ushort(int(graph[edge[0]][edge[1]][label]))
                 else:
-                    array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][0][label]))
+                    array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][label]))
 
     # Set filename to write into
     filename = str(target_file) + ".nrrd"

@@ -20,7 +20,7 @@ def write(graph, target_file, labels):
         output_file.write(edge[0] + '; ' + edge[1] + ';')
         # Write each labels content
         for label in labels:
-            output_file.write(' ' + str(graph[edge[0]][edge[1]][0][label]) + ';')
+            output_file.write(' ' + str(graph[edge[0]][edge[1]][label]) + ';')
         output_file.write("\n")
 
     output_file.close()

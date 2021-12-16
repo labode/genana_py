@@ -9,7 +9,8 @@ from node_finder import find_new_neighbors, find_leaf_nodes
 
 def read_graph(file):
     # Read graph from .dot file and turn it into a networkx graph
-    dot_graph = nx.drawing.nx_pydot.read_dot(file)
+    # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.read_dot.html
+    dot_graph = nx.Graph(nx.drawing.nx_pydot.read_dot(file))
 
     return dot_graph
 
@@ -26,7 +27,7 @@ def generation_analysis(node, nx_graph):
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
-                nx_graph[str(i)][str(j)][0]['Gen'] = gen
+                nx_graph[str(i)][str(j)]['Gen'] = gen
                 nn.append(j)
         nodes = nn
         gen += 1
@@ -58,7 +59,7 @@ def order_analysis(node, nx_graph):
 
             if len(list(neighbors)) == 1:
                 print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has order " + str(order))
-                nx_graph[str(i)][str(neighbors[0])][0]['Ord'] = order
+                nx_graph[str(i)][str(neighbors[0])]['Ord'] = order
                 rm.append(i)
                 add.append(neighbors[0])
 
@@ -108,7 +109,7 @@ def strahler_order(node, nx_graph):
                     # Try block is needed, as we can not access a label, if it has not been assigned yet
                     # => would throw an error when starting at leaf nodes
                     try:
-                        orders.append(nx_graph[str(position)][str(point)][0]['Str_Ord'])
+                        orders.append(nx_graph[str(position)][str(point)]['Str_Ord'])
                     except KeyError:
                         continue
 
@@ -132,7 +133,7 @@ def strahler_order(node, nx_graph):
                         order = orders[0]
 
                 # Write new order into graph
-                nx_graph[str(position)][str(neighbors[0])][0]['Str_Ord'] = order
+                nx_graph[str(position)][str(neighbors[0])]['Str_Ord'] = order
 
                 print(
                     "The edge between node "
@@ -170,7 +171,7 @@ def give_id(node, nx_graph):
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
-                nx_graph[str(i)][str(j)][0]['Id'] = unique_id
+                nx_graph[str(i)][str(j)]['Id'] = unique_id
                 nn.append(j)
                 unique_id += 1
         nodes = nn
@@ -193,7 +194,7 @@ def calculate_length(nx_graph, size):
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge_points = graph[str(edge[0])][str(edge[1])][0]['spatial_edge']
+        edge_points = graph[str(edge[0])][str(edge[1])]['spatial_edge']
         # TODO: The return looks like a json array, but using a json parser does not work
         # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
@@ -231,9 +232,16 @@ def calculate_length(nx_graph, size):
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(edge[0])][str(edge[1])][0]['Length'] = round(length * float(size), 4)
+        nx_graph[str(edge[0])][str(edge[1])]['Length'] = round(length * float(size), 4)
 
     return nx_graph
+
+# TODO: Possible extension: Add function to calculate path length from every leaf node to the root node?
+
+# TODO: Possible extension: Calculate cumulated sizes for strahler order
+#  => connected segments of the same order are counted as one segment
+#  Caution! counting should be done from the leaf nodes up, checking each step,
+#  that the distance to the root node gets smaller. Otherwise we might walk into a bordering branch of the same order
 
 
 if __name__ == '__main__':
@@ -272,6 +280,7 @@ if __name__ == '__main__':
         color_map = ''
 
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
+    # TODO: Add substitution map => read .csv containing id/value pairs to import later analysis results
 
     print('Reading graph')
     graph = read_graph(dotfile)
