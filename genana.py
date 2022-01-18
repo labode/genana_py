@@ -280,7 +280,6 @@ if __name__ == '__main__':
         color_map = ''
 
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
-    # TODO: Add substitution map => read .csv containing id/value pairs to import later analysis results
 
     print('Reading graph')
     graph = read_graph(dotfile)
