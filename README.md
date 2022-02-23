@@ -1,5 +1,5 @@
 # Generation analysis toolkit
-Collection of tools for the analysis of graph branching. Supports atm. Generations, Order, Strahler Order and ID assignment.
+Collection of tools for the analysis of graph branching. Supports atm. Generations[1], Order[2], Strahler Order[3] and ID assignment.
 Build to work on GraphViz output from https://github.com/phcerdan/SGEXT
 
 ## How does it work?
@@ -39,3 +39,6 @@ For an Order analysis of the file graph.dot, target = test_run, root node = 0, v
 
 `python genana.py graph.dot, test_run, 1, 0, 10, 10, 10, 0, 0, 0, 2`
 
+[1] Weibel, E.R., 1963. Geometric and dimensional airway models of conductive, transitory and respiratory zones of the human lung, in: Morphometry of the Human Lung. Springer Berlin Heidelberg, pp. 136-142.\
+[2] Horsfield, K., 1984. Axial pathways compared with complete data in morphological studies of the lung. Respiration Physiology 55, 317-324.\
+[3] Strahler, A.N., 1957. Quantitative analysis of watershed geomorphology. Eos, Transactions American Geophysical Union 38, 913-920.
