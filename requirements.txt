@@ -1,0 +1,4 @@
+numpy==1.16.2
+pynrrd==0.4.2
+networkx==2.2
+pydot==1.4.2
