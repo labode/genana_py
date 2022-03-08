@@ -261,7 +261,7 @@ if __name__ == '__main__':
         off_y = sys.argv[9]
         off_z = sys.argv[10]
 
-        off = [int(off_x), int(off_y), int(off_z)]
+        off = [float(off_x), float(off_y), float(off_z)]
 
     except IndexError:
         sys.exit('Missing parameters \nPlease supply: dotfile, output_filename, analysis_type (0-4), root_node,'
