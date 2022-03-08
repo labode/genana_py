@@ -42,7 +42,7 @@ def order_analysis(node, nx_graph):
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
     # We are done, when we reach the root node
-    while len(pos) != 1 or pos[0] != node:
+    while len(pos) > 0:
         add = []
         rm = []
         for i in pos:
@@ -64,7 +64,7 @@ def order_analysis(node, nx_graph):
                 add.append(neighbors[0])
 
         for i in add:
-            if i not in pos:
+            if i not in pos and i != node:
                 pos.append(i)
 
         for i in rm:
@@ -84,7 +84,7 @@ def strahler_order(node, nx_graph):
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
     # We are done, when we reach the root node
-    while len(positions) != 1 or positions[0] != node:
+    while len(positions) > 0:
         add = []
         rm = []
         for position in positions:
@@ -145,7 +145,7 @@ def strahler_order(node, nx_graph):
                 add.append(neighbors[0])
 
         for i in add:
-            if i not in positions:
+            if i not in positions and i != node:
                 positions.append(i)
 
         for i in rm:
