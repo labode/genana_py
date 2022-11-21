@@ -1,6 +1,6 @@
 # Generation analysis toolkit
 Collection of tools for the analysis of graph branching. Supports atm. Generations[1], Order[2], Strahler Order[3] and ID assignment.
-Build to work on GraphViz output from https://github.com/phcerdan/SGEXT
+Built to work on GraphViz output from https://github.com/phcerdan/SGEXT
 
 ## How does it work?
 - Reads supplied .dot graph into networkx representation
