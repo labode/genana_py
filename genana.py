@@ -32,7 +32,7 @@ def generation_analysis(node, nx_graph):
         nodes = nn
         gen += 1
 
-    return graph
+    return nx_graph
 
 
 def order_analysis(node, nx_graph):
@@ -46,7 +46,7 @@ def order_analysis(node, nx_graph):
         add = []
         rm = []
         for i in pos:
-            neighbors = list(nx.neighbors(graph, i))
+            neighbors = list(nx.neighbors(nx_graph, i))
             visited.append(i)
 
             rm_n = []
@@ -88,7 +88,7 @@ def strahler_order(node, nx_graph):
         add = []
         rm = []
         for position in positions:
-            neighbors = list(nx.neighbors(graph, position))
+            neighbors = list(nx.neighbors(nx_graph, position))
             visited.append(position)
 
             rm_n = []
@@ -182,19 +182,19 @@ def give_id(node, nx_graph):
 def calculate_length(nx_graph, size):
 
     # get all edges
-    edges = list(nx.edges(graph))
+    edges = list(nx.edges(nx_graph))
 
     for edge in edges:
         pos_arr = []
 
         # Get the coordinates of the starting point of the edge
-        node_0 = graph.node[str(edge[0])]['spatial_node']
+        node_0 = nx_graph.node[str(edge[0])]['spatial_node']
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge_points = graph[str(edge[0])][str(edge[1])]['spatial_edge']
+        edge_points = nx_graph[str(edge[0])][str(edge[1])]['spatial_edge']
         # TODO: The return looks like a json array, but using a json parser does not work
         # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
@@ -210,7 +210,7 @@ def calculate_length(nx_graph, size):
             pos_arr.append(coords)
 
         # Get the coordinates of the end point of the edge
-        node_1 = graph.node[str(edge[1])]['spatial_node']
+        node_1 = nx_graph.node[str(edge[1])]['spatial_node']
         node_1 = node_1.replace('"', '')
         coords = node_1.split(' ')
         pos_arr.append(coords)
