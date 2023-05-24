@@ -21,7 +21,7 @@ def read_colormap(colormap):
             b = hex(255 - int(row[2]))
 
             # Add leading # and remove leading 0x from hex
-            colors.append('#' + r[2:] + g[2:] + b[2:])
+            colors.append('"' + '#' + r[2:] + g[2:] + b[2:] + '"')
 
     return colors
 
