@@ -1,6 +1,6 @@
 import networkx as nx
 import math
-import sys
+import argparse
 import nrrd_writer
 import dot_writer
 import csv_writer
@@ -245,67 +245,84 @@ def calculate_length(nx_graph, size):
 
 
 if __name__ == '__main__':
-    try:
-        dotfile = sys.argv[1]
-        output = sys.argv[2]
-        analysis_type = sys.argv[3]
-        root_node = sys.argv[4]
+    parser = argparse.ArgumentParser(description='Analyzes a .dot graph')
+    # Mandatory arguments
+    parser.add_argument('input_file', action='store', type=str, help='.dot file to analyze')
+    parser.add_argument('analysis_type', choices=['gen', 'ord', 'str_ord', 'id', 'global'],
+                        help='Analysis you wish to perform. Options: Generations, Orders, Strahler orders, Ids '
+                             'or a global analysis performing all of them')
+    parser.add_argument('root_node', action='store', type=str, help='Root node of the graph')
+    parser.add_argument('dim_x', action='store', type=int, help='Volume image dimension x')
+    parser.add_argument('dim_y', action='store', type=int, help='Volume image dimension y')
+    parser.add_argument('dim_z', action='store', type=int, help='Volume image dimension z')
+    # Note: Float is used, as type conversions, etc. can lead to offset values of e.g. 1.15999999999 in file headers
+    parser.add_argument('--offset_x', action='store', type=float, default=0, required=False,
+                        help='Image offset in x dimension; If not supplied, 0 is used')
+    parser.add_argument('--offset_y', action='store', type=float, default=0, required=False,
+                        help='Image offset in y dimension; If not supplied, 0 is used')
+    parser.add_argument('--offset_z', action='store', type=float, default=0, required=False,
+                        help='Image offset in z dimension; If not supplied, 0 is used')
+    # Optional arguments
+    parser.add_argument('-v', '--voxel_size', action='store', type=float, default=1, required=False,
+                        help='Voxel edge length; If not supplied, 1 is used; only isometric voxels are supported')
+    parser.add_argument('-o', '--output_file', action='store', type=str, default='analysis',
+                        required=False, help='Name of output file; If not supplied, '
+                                             'analysis[.dot|.png|.nrrd|.csv] is used')
+    parser.add_argument('-c', '--color_map', action='store', type=str, required=False, help='Path to color map')
 
-        dim_x = sys.argv[5]
-        dim_y = sys.argv[6]
-        dim_z = sys.argv[7]
+    args = parser.parse_args()
 
-        dims = [int(dim_x), int(dim_y), int(dim_z)]
+    # Basic information
+    input_file = args.input_file
+    root_node = args.root_node
+    analysis_type = args.analysis_type
 
-        off_x = sys.argv[8]
-        off_y = sys.argv[9]
-        off_z = sys.argv[10]
+    # Sizing
+    dim_x = args.dim_x
+    dim_y = args.dim_y
+    dim_z = args.dim_z
 
-        off = [float(off_x), float(off_y), float(off_z)]
+    off_x = args.offset_x
+    off_y = args.offset_y
+    off_z = args.offset_z
 
-    except IndexError:
-        sys.exit('Missing parameters \nPlease supply: dotfile, output_filename, analysis_type (0-4), root_node,'
-                 'x dim, y dim, z dim, x offset, y offset, z offset')
+    voxel_size = args.voxel_size
 
-    try:
-        voxel_size = sys.argv[11]
-    except IndexError:
-        voxel_size = 1
-        print('No voxel size supplied, 1 will be used for .nrrd header and length calculations')
+    # Misc. optional arguments
+    output = args.output_file
+    color_map = args.color_map
 
-    # Color map is optional
-    try:
-        color_map = sys.argv[12]
-    except IndexError:
-        color_map = ''
+    # Preparation of the size data for further use
+    dims = [int(dim_x), int(dim_y), int(dim_z)]
+    off = [float(off_x), float(off_y), float(off_z)]
 
     # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
     print('Reading graph')
-    graph = read_graph(dotfile)
+    graph = read_graph(input_file)
 
-    if int(analysis_type) == 0:
+    if analysis_type == 'gen':
         print('Performing Generation analysis')
         graph_w_gens = generation_analysis(root_node, graph)
         print('Writing .dot')
         dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map)
         print('Writing .nrrd')
         nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
-    elif int(analysis_type) == 1:
+    elif analysis_type == 'ord':
         print('Performing Order analysis')
         graph_w_ord = order_analysis(root_node, graph)
         print('Writing .dot')
         dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map)
         print('Writing .nrrd')
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
-    elif int(analysis_type) == 2:
+    elif analysis_type == 'str_ord':
         print('Performing Strahler order analysis')
         graph_w_str_ord = strahler_order(root_node, graph)
         print('Writing .dot')
         dot_writer.write(graph_w_str_ord, output, root_node, True, 'Str_Ord', color_map)
         print('Writing .nrrd')
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
-    elif int(analysis_type) == 3:
+    elif analysis_type == 'id':
         print('Performing Id analysis')
         graph_w_ids = give_id(root_node, graph)
         print('Writing .dot')
@@ -313,7 +330,7 @@ if __name__ == '__main__':
         print('Writing .nrrd')
         nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
-    elif int(analysis_type) == 4:
+    else:  # The only analysis_type possible is now 'global'
         print('Performing global analysis')
         graph_w_ids = give_id(root_node, graph)
         graph_w_gens = generation_analysis(root_node, graph_w_ids)
@@ -323,5 +340,3 @@ if __name__ == '__main__':
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
         print('Writing .csv')
         csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
-    else:
-        print("Analysis type not supported")
