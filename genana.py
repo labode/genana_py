@@ -120,7 +120,7 @@ def strahler_order(node, nx_graph):
                 elif len(orders) == 1:
                     # Get their order
                     order = orders[0]
-                # If we have multiple incoming nodes, he have to check for a possible increase
+                # If we have multiple incoming nodes, we have to check for a possible increase
                 else:
                     # Order values in array in descending order
                     orders.sort()
