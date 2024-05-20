@@ -22,13 +22,13 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
         pos_arr = []
 
         # Get the coordinates of the starting point of the edge
-        node_0 = graph.node[str(edge[0])]['spatial_node']
+        node_0 = graph.nodes[str(edge[0])]['spatial_node']
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
 
         # Get the coordinates of the end point of the edge
-        node_1 = graph.node[str(edge[1])]['spatial_node']
+        node_1 = graph.nodes[str(edge[1])]['spatial_node']
         node_1 = node_1.replace('"', '')
         coords = node_1.split(' ')
         pos_arr.append(coords)

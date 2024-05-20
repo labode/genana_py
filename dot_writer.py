@@ -43,7 +43,8 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
     # Get all nodes, print those out
     nodes = nx.nodes(nx_graph)
     for i in nodes:
-        output_file.write(str(i) + ";\n")
+        if str(i) != '\\n':
+            output_file.write(str(i) + ";\n")
 
     # Write each edge pair with generation marking, hierarchically ordered
     visited = [root_node]
