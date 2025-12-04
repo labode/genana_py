@@ -58,7 +58,10 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
             for j in neighbors:
                 if color == bool(True):
                     col = int(nx_graph[i][j][label]) - 1
-                    col_str = " color = " + str(colors[col])
+                    try:
+                        col_str = " color = " + str(colors[col])
+                    except IndexError:
+                        col_str = ''
                 else:
                     col_str = ""
                 output_file.write(
