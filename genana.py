@@ -39,8 +39,10 @@ def generation_analysis(node, nx_graph):
 
 
 def order_analysis(node, nx_graph):
-    pos = find_leaf_nodes(node, nx_graph)
+    positions = find_leaf_nodes(node, nx_graph)
     visited = []
+    previous = []
+    deadlock = False
     order = 1
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
@@ -51,31 +53,65 @@ def order_analysis(node, nx_graph):
         for i in pos:
             neighbors = list(nx.neighbors(nx_graph, i))
             visited.append(i)
+    while len(positions) > 0:
+        nodes_to_add = []
+        nodes_to_rm = []
 
-            rm_n = []
-            for j in neighbors:
-                if j in visited:
-                    if j not in pos:
-                        rm_n.append(j)
-            for k in rm_n:
-                neighbors.remove(k)
+        if positions == previous:
+            print('Deadlock detected')
+            deadlock = True
+            # As we had a round without order attribution, we need do undo the incrementation
+            order -= 1
+            if len(positions) > 2:
+                exit('Mesh detected; Aborting')
+            else:
+                print('Two way connection discovered')
+                # Here we use the order level that we last gave out successfully
+                print("The offending edge between node " + str(positions[0]) + " and " + str(positions[1]) +
+                      " has been assigned order " + str(order - 1))
+                nx_graph[str(positions[0])][str(positions[1])]['Ord'] = order - 1
+
+        previous = positions.copy()
+
+        for position in positions:
+            # If we land in a deadlock we do not break and instead try fixing it below
+            if not deadlock:
+                if position in visited:
+                    continue
+                else:
+                    visited.append(position)
+
+            neighbors = list(nx.neighbors(nx_graph, position))
+            neighbors_to_remove = []
+            for neighbor in neighbors:
+                if neighbor in visited:
+                    if neighbor not in positions:
+                        neighbors_to_remove.append(neighbor)
+            for neighbor in neighbors_to_remove:
+                neighbors.remove(neighbor)
+
+            if deadlock:
+                offender = positions.copy()
+                offender.remove(position)
+                neighbors.remove(offender[0])
 
             if len(list(neighbors)) == 1:
-                print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has order " + str(order))
-                nx_graph[str(i)][str(neighbors[0])]['Ord'] = order
-                rm.append(i)
-                add.append(neighbors[0])
+                print("The edge between node " + str(position) + " and " + str(neighbors[0]) + "  order " + str(order))
+                nx_graph[str(position)][str(neighbors[0])]['Ord'] = order
+                nodes_to_rm.append(position)
+                nodes_to_add.append(neighbors[0])
 
-        for i in add:
-            if i not in pos and i != node:
-                pos.append(i)
+        for i in nodes_to_add:
+            if i not in positions and i != node:
+                positions.append(i)
 
-        for i in rm:
-            pos.remove(i)
+        for i in nodes_to_rm:
+            positions.remove(i)
             if i not in visited:
                 visited.append(i)
 
         order += 1
+        deadlock = False
 
     return nx_graph
 
