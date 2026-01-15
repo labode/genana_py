@@ -47,12 +47,6 @@ def order_analysis(node, nx_graph):
 
     # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
     # We are done, when we reach the root node
-    while len(pos) > 0:
-        add = []
-        rm = []
-        for i in pos:
-            neighbors = list(nx.neighbors(nx_graph, i))
-            visited.append(i)
     while len(positions) > 0:
         nodes_to_add = []
         nodes_to_rm = []
