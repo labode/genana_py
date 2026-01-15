@@ -161,7 +161,7 @@ def strahler_order(node, nx_graph):
 # TODO: probably very over engineered
 def give_id(node, nx_graph):
     unique_id = 1
-    visited = [node]
+    visited = []
     nodes = [node]
 
     while len(nodes) != 0:
