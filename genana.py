@@ -17,7 +17,7 @@ def read_graph(file):
 
 def generation_analysis(node, nx_graph):
     gen = 1
-    visited = [node]
+    visited = []
     nodes = [node]
 
     while len(nodes) != 0:
@@ -28,7 +28,10 @@ def generation_analysis(node, nx_graph):
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
                 nx_graph[str(i)][str(j)]['Gen'] = gen
-                nn.append(j)
+                if j in nodes:
+                    continue
+                else:
+                    nn.append(j)
         nodes = nn
         gen += 1
 
