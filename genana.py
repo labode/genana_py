@@ -172,8 +172,11 @@ def give_id(node, nx_graph):
             for j in neighbors:
                 print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
                 nx_graph[str(i)][str(j)]['Id'] = unique_id
-                nn.append(j)
                 unique_id += 1
+                if j in nodes:
+                    continue
+                else:
+                    nn.append(j)
         nodes = nn
 
     return nx_graph

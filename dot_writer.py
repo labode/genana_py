@@ -69,7 +69,10 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
                     " [ label = \"" + label + " " + str(nx_graph[i][j][label]) +
                     "\"" + col_str + "];\n"
                 )
-                nn.append(j)
+                if j in nodes:
+                    continue
+                else:
+                    nn.append(j)
         nodes = nn
 
     output_file.write("}")
