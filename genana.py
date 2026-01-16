@@ -60,12 +60,12 @@ def order_analysis(node, nx_graph, strahler=False):
             # Hypothesis: There is a connection between the positions we are currently standing on and until that is solved, we can not continue to new positions
             # Find the connection
             i = 0
-            j = 1
             length = len(positions)
             solved = False
             # Here we walk through all possible connections between our current positions
             while length > i and not solved:
                 neighbors = list(nx.neighbors(nx_graph, positions[i]))
+                j = i + 1
                 while length > j:
                     if positions[j] in neighbors:
                         print('There is a connection between position ' + str(positions[i]) + ' and position ' + str(positions[j]))
@@ -117,7 +117,10 @@ def order_analysis(node, nx_graph, strahler=False):
                 offenders = positions.copy()
                 offenders.remove(position)
                 for offender in offenders:
-                    neighbors.remove(offender)
+                    try:
+                        neighbors.remove(offender)
+                    except ValueError:
+                        continue
 
             if len(list(neighbors)) == 1:
                 orders = get_orders(nx_graph, position, label)
