@@ -133,46 +133,17 @@ def strahler_order(node, nx_graph):
                 neighbors.remove(k)
 
             if len(list(neighbors)) == 1:
-                # Get neighbours of our node
-                bordering = list(nx.neighbors(nx_graph, position))
-
-                # Get their orders
-                orders = []
-                for point in bordering:
-                    # Try block is needed, as we can not access a label, if it has not been assigned yet
-                    # => would throw an error when starting at leaf nodes
-                    try:
-                        orders.append(nx_graph[str(position)][str(point)]['Str_Ord'])
-                    except KeyError:
-                        continue
-
-                # If we have no existing orders, we start at 1 (position is a leaf node)
-                if len(orders) == 0:
-                    order = 1
-                # If there is only one previous order, there is no increase, we assign the previous order
-                elif len(orders) == 1:
-                    # Get their order
-                    order = orders[0]
-                # If we have multiple incoming nodes, we have to check for a possible increase
-                else:
-                    # Order values in array in descending order
-                    orders.sort()
-                    orders = orders[::-1]
-                    # If we have two equal orders, we increase the order by one
-                    if orders[0] == orders[1]:
-                        order = orders[0] + 1
-                    # If we have dissimilar orders, we continue with the highest one
-                    else:
-                        order = orders[0]
+                orders = get_orders(nx_graph, position)
+                new_order = decide_strahler_order(orders)
 
                 # Write new order into graph
-                nx_graph[str(position)][str(neighbors[0])]['Str_Ord'] = order
+                nx_graph[str(position)][str(neighbors[0])]['Str_Ord'] = new_order
 
                 print(
                     "The edge between node "
                     + str(position) + " and "
                     + str(neighbors[0])
-                    + " has strahler order " + str(order)
+                    + " has strahler order " + str(new_order)
                 )
                 rm.append(position)
                 add.append(neighbors[0])
@@ -214,6 +185,44 @@ def give_id(node, nx_graph):
 
     return nx_graph
 
+def get_orders(nx_graph, position):
+    # Get neighbours of our node
+    bordering = list(nx.neighbors(nx_graph, position))
+
+    # Get their orders
+    orders = []
+    for point in bordering:
+        # Try block is needed, as we can not access a label, if it has not been assigned yet
+        # => would throw an error when starting at leaf nodes
+        try:
+            orders.append(nx_graph[str(position)][str(point)]['Str_Ord'])
+        except KeyError:
+            continue
+
+    return orders
+
+def decide_strahler_order(orders):
+    # If we have no existing orders, we start at 1 (position is a leaf node)
+    if len(orders) == 0:
+        order = 1
+    # If there is only one previous order, there is no increase, we assign the previous order
+    elif len(orders) == 1:
+        # Get their order
+        order = orders[0]
+    # If we have multiple incoming nodes, we have to check for a possible increase
+    else:
+        # Order values in array in descending order
+        # For i in orders... if i = order i+1...
+        orders.sort()
+        orders = orders[::-1]
+        # If we have two equal orders, we increase the order by one
+        if orders[0] == orders[1]:
+            order = orders[0] + 1
+        # If we have dissimilar orders, we continue with the highest one
+        else:
+            order = orders[0]
+
+    return order
 
 def calculate_length(nx_graph, size):
 
