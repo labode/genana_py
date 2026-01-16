@@ -26,8 +26,7 @@ def generation_analysis(node, nx_graph):
             visited.append(i)
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
-                print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
-                nx_graph[str(i)][str(j)]['Gen'] = gen
+                nx_graph = assign_order(nx_graph, i, j, gen, 'Gen')
                 if j in nodes:
                     continue
                 else:
