@@ -145,7 +145,6 @@ def order_analysis(node, nx_graph, strahler=False):
 
 # just like genana, but every edge gets its unique id instead of a generation
 # to be used for external grouping according to properties of the graph segments
-# TODO: probably very over engineered
 def give_id(node, nx_graph):
     unique_id = 1
     visited = []
@@ -157,8 +156,7 @@ def give_id(node, nx_graph):
             visited.append(i)
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
-                print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
-                nx_graph[str(i)][str(j)]['Id'] = unique_id
+                nx_graph = assign_order(nx_graph, i, j, unique_id,'Id' )
                 unique_id += 1
                 if j in nodes:
                     continue
