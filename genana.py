@@ -168,6 +168,18 @@ def give_id(node, nx_graph):
 
     return nx_graph
 
+def get_order(nx_graph, position_0, position_1, label):
+    try:
+        existing_order = nx_graph[str(position_0)][str(position_1)][label]
+    except KeyError:
+        try:
+            existing_order = nx_graph[str(position_1)][str(position_0)][label]
+        except KeyError:
+            existing_order = ''
+
+    return existing_order
+
+
 
 def get_orders(nx_graph, position, label):
     neighbours = list(nx.neighbors(nx_graph, position))
