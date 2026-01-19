@@ -244,6 +244,20 @@ def assign_order(nx_graph, position_0, position_1, order, label):
     return nx_graph
 
 
+def get_neighbours_wo_label(nx_graph, position, label):
+    neighbors = list(nx.neighbors(nx_graph, position))
+    # Remove neighbours that we already have a labeled edge to
+    neighbors_to_remove = []
+    for neighbor in neighbors:
+        if get_order(nx_graph, position, neighbor, label):
+            neighbors_to_remove.append(neighbor)
+
+    for entry in neighbors_to_remove:
+        neighbors.remove(entry)
+
+    return neighbors
+
+
 def calculate_length(nx_graph, size):
 
     # get all edges
