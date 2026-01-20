@@ -59,7 +59,11 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
                 if label == 'Id':
                     array[int(j[0]), int(j[1]), int(j[2])] = np.ushort(int(graph[edge[0]][edge[1]][label]))
                 else:
-                    array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][label]))
+                    try:
+                        array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(graph[edge[0]][edge[1]][label]))
+                    except KeyError:
+                        print('Warning! No ' + str(label) + ' for edge between node ' + str(edge[0]) + ' and node ' + str(edge[1]))
+                        array[int(j[0]), int(j[1]), int(j[2])] = np.ubyte(int(0))
 
     # Set filename to write into
     filename = str(target_file) + ".nrrd"

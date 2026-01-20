@@ -64,9 +64,16 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
                         col_str = ''
                 else:
                     col_str = ""
+
+                try:
+                    label_str = str(nx_graph[i][j][label])
+                except KeyError:
+                    print('Warning! No ' + str(label) + ' for edge between node ' + str(i) + ' and node ' + str(j))
+                    label_str = '0'
+
                 output_file.write(
                     str(i) + "--" + str(j) +
-                    " [ label = \"" + label + " " + str(nx_graph[i][j][label]) +
+                    " [ label = \"" + label + " " + label_str +
                     "\"" + col_str + "];\n"
                 )
                 if j in nodes:
