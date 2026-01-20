@@ -39,37 +39,29 @@ def generation_analysis(node, nx_graph):
 
 def order_analysis(node, nx_graph, strahler=False):
     positions = find_leaf_nodes(node, nx_graph)
-    visited = []
     previous = []
-    deadlock = False
+    positions_to_remove = []
+    positions_to_add = []
     if strahler:
         label = 'Str_Ord'
     else:
         label = 'Ord'
 
-    # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
-    # We are done, when we have nowhere left to go
     while len(positions) > 0:
-        nodes_to_add = []
-        nodes_to_remove = []
-
+        # Deadlock catch: If we didn't manage to do make any progress in the last round, we need to intervene
         if positions == previous:
             print('Deadlock detected')
-            deadlock = True
-            # okay, we did not manage to ascend in the last round thus, we will have to either solve the underlying problem or abort
-            # Hypothesis: There is a connection between the positions we are currently standing on and until that is solved, we can not continue to new positions
-            # Find the connection
             i = 0
-            length = len(positions)
+            length_positions = len(positions)
             solved = False
-            # Here we walk through all possible connections between our current positions
-            while length > i and not solved:
-                neighbors = list(nx.neighbors(nx_graph, positions[i]))
+
+            # Here we check for interconnections between our current positions
+            print('Trying strategy one to solve')
+            while length_positions > i and not solved:
+                neighbors = get_neighbours_wo_label(nx_graph, positions[i], label)
                 j = i + 1
-                while length > j:
+                while length_positions > j:
                     if positions[j] in neighbors:
-                        print('There is a connection between position ' + str(positions[i]) + ' and position ' + str(positions[j]))
-                        print('Solving...')
                         # Assign an order to that connection
                         orders_i = get_orders(nx_graph, positions[i], label)
                         orders_j = get_orders(nx_graph, positions[j], label)
@@ -90,50 +82,53 @@ def order_analysis(node, nx_graph, strahler=False):
                 i += 1
 
             # Continue with the normal routine. Either that was the sole problem or we solve the next one next time...
+            # If the first strategy did not work, that means that all positions have more than one outgoing edge.
+            # We just grab the first one and perform out label assignment. Either that did it or we will arrive here again for the next edge
+            if not solved:
+                print('Trying strategy two to solve')
+                for position in positions:
+                    neighbors = get_neighbours_wo_label(nx_graph, position, label)
+                    if len(neighbors) > 0:
+                            orders = get_orders(nx_graph, position, label)
+                            new_order = determine_order(orders, strahler)
+                            nx_graph = assign_order(nx_graph, position, neighbors[0], new_order, label)
+                            solved = True
+                            break
+
+            # If we ended up here, our problem-solving approaches were unable to fix the issue... weired
             if not solved:
                 exit('Deadlock could not be solved. Exiting.')
 
         previous = positions.copy()
 
+        # Normal operation
         for position in positions:
-            if not deadlock:
-                if position not in visited:
-                    visited.append(position)
+            # Check for neighbours
+            neighbors = get_neighbours_wo_label(nx_graph, position, label)
 
-            neighbors = list(nx.neighbors(nx_graph, position))
-
-            if position not in visited:
-                visited.append(position)
-
-            rm_n = []
-            for neighbor in neighbors:
-                if neighbor in visited:
-                    if neighbor not in positions:
-                        rm_n.append(neighbor)
-            for k in rm_n:
-                neighbors.remove(k)
-
-            if deadlock:
-                offenders = positions.copy()
-                offenders.remove(position)
-                for offender in offenders:
-                    try:
-                        neighbors.remove(offender)
-                    except ValueError:
-                        continue
-
-            if len(list(neighbors)) == 1:
+            # Nowhere left to go means we can just remove this position from our list
+            if len(neighbors) == 0:
+                positions_to_remove.append(position)
+            # Only one option left means we can safely assign an order here
+            elif len(neighbors) == 1:
                 orders = get_orders(nx_graph, position, label)
                 new_order = determine_order(orders, strahler)
-
                 nx_graph = assign_order(nx_graph, position, neighbors[0], new_order, label)
+                positions_to_remove.append(position)
+                # As long as the neighbour is not the root node, we add it to the list of current positions
+                if neighbors[0] != node:
+                    positions_to_add.append(neighbors[0])
+            # More than one neighbour means we do other sites first
+            else:
+                continue
 
-                nodes_to_remove.append(position)
-                nodes_to_add.append(neighbors[0])
-
-        for i in nodes_to_add:
-            if i not in positions and i != node:
-                positions.append(i)
+        # Updating for next round
+        for entry in positions_to_add:
+            if entry not in positions:
+                positions.append(entry)
+        for entry in positions_to_remove:
+            if entry in positions:
+                positions.remove(entry)
 
         for i in nodes_to_remove:
             positions.remove(i)
