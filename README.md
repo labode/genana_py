@@ -7,6 +7,13 @@ Built to work on GraphViz output from https://github.com/phcerdan/SGEXT
 - Walks through the graph, assigning labels to edges according to one or more of the classification metrics
 - Outputs either a labeled graph for a specific metric (.dot file, .png 2D rendering and a .nrrd 3D volume file) or the analysis results of all assignment methods as a single .csv file
 
+## Warning!
+This tool is aimed at the analysis of dichotomous branching structures (i.e. starting from the root node, at every 
+branching point the tree should split into two or more subtrees, that are **not** interconnected). 
+If that is not the case, results might not be what the user expects. Generations may increase in ways that are not expected, but the program will return results.
+For (Strahler-) orders such interconnections may lead to a deadlock situation in the algorithm. The program will warn about this and try to fix it, but may not be successful and will abort without results.
+Again, even if the program succeeds, order attribution might not be as expected, some edges might not even be caught at all.
+
 ## Requirements
 Required packages are listed in requirements.txt and can be installed using pip as follows:\
 `pip3 install -r requirements.txt`
