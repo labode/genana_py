@@ -130,13 +130,6 @@ def order_analysis(node, nx_graph, strahler=False):
             if entry in positions:
                 positions.remove(entry)
 
-        for i in nodes_to_remove:
-            positions.remove(i)
-            if i not in visited:
-                visited.append(i)
-
-        deadlock = False
-
     return nx_graph
 
 
