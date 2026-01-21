@@ -342,7 +342,9 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output_file', action='store', type=str, default='analysis',
                         required=False, help='Name of output file; If not supplied, '
                                              'analysis[.dot|.png|.nrrd|.csv] is used')
-    parser.add_argument('-c', '--color_map', action='store', type=str, required=False, help='Path to color map')
+    parser.add_argument('-c', '--color_map', action='store', type=str, required=False,
+                        help='Path to color map')
+    parser.add_argument('--png', action='store_true', help='Create .png of the .dot graph')
 
     args = parser.parse_args()
 
@@ -365,12 +367,12 @@ if __name__ == '__main__':
     # Misc. optional arguments
     output = args.output_file
     color_map = args.color_map
+    png = args.png
 
     # Preparation of the size data for further use
     dims = [int(dim_x), int(dim_y), int(dim_z)]
     off = [float(off_x), float(off_y), float(off_z)]
 
-    # TODO: Make writing of .dot (, .png) and .nrrd independently available?
 
     print('Reading graph')
     graph = read_graph(input_file)
@@ -378,29 +380,37 @@ if __name__ == '__main__':
     if analysis_type == 'gen':
         print('Performing Generation analysis')
         graph_w_gens = generation_analysis(root_node, graph)
-        print('Writing graph to ' + output + '.dot and ' + output + '.png')
-        dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map)
+        print('Writing graph to ' + output + '.dot')
+        if png:
+            print('And visualization to ' + output + '.png')
+        dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map, png)
         print('Writing .nrrd to ' + output + '.nrrd')
         nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
     elif analysis_type == 'ord':
         print('Performing Order analysis')
         graph_w_ord = order_analysis(root_node, graph)
-        print('Writing graph to ' + output + '.dot and ' + output + '.png')
-        dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map)
+        print('Writing graph to ' + output + '.dot')
+        if png:
+            print('And visualization to ' + output + '.png')
+        dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map, png)
         print('Writing .nrrd to ' + output + '.nrrd')
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif analysis_type == 'str_ord':
         print('Performing Strahler order analysis')
         graph_w_str_ord = order_analysis(root_node, graph, True)
-        print('Writing graph to ' + output + '.dot and ' + output + '.png')
-        dot_writer.write(graph_w_str_ord, output, root_node, True, 'Str_Ord', color_map)
+        print('Writing graph to ' + output + '.dot')
+        if png:
+            print('And visualization to ' + output + '.png')
+        dot_writer.write(graph_w_str_ord, output, root_node, False, 'Str_Ord', color_map, png)
         print('Writing .nrrd to ' + output + '.nrrd')
         nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif analysis_type == 'id':
         print('Performing Id analysis')
         graph_w_ids = give_id(root_node, graph)
-        print('Writing graph to ' + output + '.dot and ' + output + '.png')
-        dot_writer.write(graph_w_ids, output, root_node, False, 'Id', color_map)
+        print('Writing graph to ' + output + '.dot')
+        if png:
+            print('And visualization to ' + output + '.png')
+        dot_writer.write(graph_w_ids, output, root_node, False, 'Id', color_map, png)
         print('Writing .nrrd to ' + output + '.nrrd')
         nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
