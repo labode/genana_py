@@ -26,8 +26,7 @@ def read_colormap(colormap):
     return colors
 
 
-def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''):
-    # TODO: Check if colormap has enough entries to be used with the given graph?
+def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap='', png=False):
     if colormap and len(colormap) > 0:
         colors = read_colormap(colormap)
         # If a color map has been supplied, we can be sure that a colored output is requested
@@ -91,6 +90,7 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
     output_file.write("}")
     output_file.close()
 
-    # Make PNG from graph
-    (output_graph,) = pydot.graph_from_dot_file(filename)
-    output_graph.write_png(str(target_file) + ".png")
+    if png:
+        # Make PNG from graph
+        (output_graph,) = pydot.graph_from_dot_file(filename)
+        output_graph.write_png(str(target_file) + ".png")
