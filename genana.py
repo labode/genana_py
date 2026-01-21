@@ -326,25 +326,30 @@ if __name__ == '__main__':
                         help='Analysis you wish to perform. Options: Generations, Orders, Strahler orders, Ids '
                              'or a global analysis performing all of them')
     parser.add_argument('root_node', action='store', type=str, help='Root node of the graph')
-    parser.add_argument('dim_x', action='store', type=int, help='Volume image dimension x')
-    parser.add_argument('dim_y', action='store', type=int, help='Volume image dimension y')
-    parser.add_argument('dim_z', action='store', type=int, help='Volume image dimension z')
-    # Note: Float is used, as type conversions, etc. can lead to offset values of e.g. 1.15999999999 in file headers
-    parser.add_argument('--offset_x', action='store', type=float, default=0, required=False,
-                        help='Image offset in x dimension; If not supplied, 0 is used')
-    parser.add_argument('--offset_y', action='store', type=float, default=0, required=False,
-                        help='Image offset in y dimension; If not supplied, 0 is used')
-    parser.add_argument('--offset_z', action='store', type=float, default=0, required=False,
-                        help='Image offset in z dimension; If not supplied, 0 is used')
     # Optional arguments
-    parser.add_argument('-v', '--voxel_size', action='store', type=float, default=1, required=False,
-                        help='Voxel edge length; If not supplied, 1 is used; only isometric voxels are supported')
     parser.add_argument('-o', '--output_file', action='store', type=str, default='analysis',
                         required=False, help='Name of output file; If not supplied, '
                                              'analysis[.dot|.png|.nrrd|.csv] is used')
     parser.add_argument('-c', '--color_map', action='store', type=str, required=False,
                         help='Path to color map')
     parser.add_argument('--png', action='store_true', help='Create .png of the .dot graph')
+    parser.add_argument('-v', '--voxel_size', action='store', type=float, default=1, required=False,
+                        help='Voxel edge length; If not supplied, 1 is used; only isometric voxels are supported')
+
+    # Arguments for Nrrd
+    subparsers = parser.add_subparsers(dest='command', help='Subcommand help')
+    nrrd_parser = subparsers.add_parser('nrrd', help='Creates a nrrd file of the generated .dot graph')
+    nrrd_parser.add_argument('dim_x', action='store', type=int, help='Volume image dimension x')
+    nrrd_parser.add_argument('dim_y', action='store', type=int, help='Volume image dimension y')
+    nrrd_parser.add_argument('dim_z', action='store', type=int, help='Volume image dimension z')
+    # Note: Float is used, as type conversions, etc. can lead to offset values of e.g. 1.15999999999 in file headers
+    nrrd_parser.add_argument('--offset_x', action='store', type=float, default=0, required=False,
+                        help='Image offset in x dimension; If not supplied, 0 is used')
+    nrrd_parser.add_argument('--offset_y', action='store', type=float, default=0, required=False,
+                        help='Image offset in y dimension; If not supplied, 0 is used')
+    nrrd_parser.add_argument('--offset_z', action='store', type=float, default=0, required=False,
+                        help='Image offset in z dimension; If not supplied, 0 is used')
+
 
     args = parser.parse_args()
 
@@ -353,25 +358,26 @@ if __name__ == '__main__':
     root_node = args.root_node
     analysis_type = args.analysis_type
 
-    # Sizing
-    dim_x = args.dim_x
-    dim_y = args.dim_y
-    dim_z = args.dim_z
+    # Nrrd options
+    if args.command == 'nrrd':
+        # Sizing
+        dim_x = args.dim_x
+        dim_y = args.dim_y
+        dim_z = args.dim_z
+        # Offset
+        off_x = args.offset_x
+        off_y = args.offset_y
+        off_z = args.offset_z
 
-    off_x = args.offset_x
-    off_y = args.offset_y
-    off_z = args.offset_z
-
-    voxel_size = args.voxel_size
+        # Preparation of the size data for further use
+        dims = [int(dim_x), int(dim_y), int(dim_z)]
+        off = [float(off_x), float(off_y), float(off_z)]
 
     # Misc. optional arguments
     output = args.output_file
     color_map = args.color_map
     png = args.png
-
-    # Preparation of the size data for further use
-    dims = [int(dim_x), int(dim_y), int(dim_z)]
-    off = [float(off_x), float(off_y), float(off_z)]
+    voxel_size = args.voxel_size
 
 
     print('Reading graph')
@@ -384,8 +390,9 @@ if __name__ == '__main__':
         if png:
             print('And visualization to ' + output + '.png')
         dot_writer.write(graph_w_gens, output, root_node, False, 'Gen', color_map, png)
-        print('Writing .nrrd to ' + output + '.nrrd')
-        nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
+        if args.command == 'nrrd':
+            print('Writing .nrrd to ' + output + '.nrrd')
+            nrrd_writer.write(graph_w_gens, dims, off, voxel_size, output, 'Gen')
     elif analysis_type == 'ord':
         print('Performing Order analysis')
         graph_w_ord = order_analysis(root_node, graph)
@@ -393,8 +400,9 @@ if __name__ == '__main__':
         if png:
             print('And visualization to ' + output + '.png')
         dot_writer.write(graph_w_ord, output, root_node, False, 'Ord', color_map, png)
-        print('Writing .nrrd to ' + output + '.nrrd')
-        nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
+        if args.command == 'nrrd':
+            print('Writing .nrrd to ' + output + '.nrrd')
+            nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif analysis_type == 'str_ord':
         print('Performing Strahler order analysis')
         graph_w_str_ord = order_analysis(root_node, graph, True)
@@ -402,8 +410,9 @@ if __name__ == '__main__':
         if png:
             print('And visualization to ' + output + '.png')
         dot_writer.write(graph_w_str_ord, output, root_node, False, 'Str_Ord', color_map, png)
-        print('Writing .nrrd to ' + output + '.nrrd')
-        nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
+        if args.command == 'nrrd':
+            print('Writing .nrrd to ' + output + '.nrrd')
+            nrrd_writer.write(graph_w_str_ord, dims, off, voxel_size, output, 'Str_Ord')
     elif analysis_type == 'id':
         print('Performing Id analysis')
         graph_w_ids = give_id(root_node, graph)
@@ -411,8 +420,9 @@ if __name__ == '__main__':
         if png:
             print('And visualization to ' + output + '.png')
         dot_writer.write(graph_w_ids, output, root_node, False, 'Id', color_map, png)
-        print('Writing .nrrd to ' + output + '.nrrd')
-        nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
+        if args.command == 'nrrd':
+            print('Writing .nrrd to ' + output + '.nrrd')
+            nrrd_writer.write(graph_w_ids, dims, off, voxel_size, output, 'Id')
     # Run all analysis types consecutively and write results to .csv
     else:  # The only analysis_type possible is now 'global'
         print('Performing global analysis')
