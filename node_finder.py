@@ -19,7 +19,7 @@ def find_new_neighbors(node, known, nx_graph):
 def find_leaf_nodes(node, nx_graph):
     # TODO: read this maybe for more efficiency
     # https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.chains.chain_decomposition.html#networkx.algorithms.chains.chain_decomposition
-    touched = [node]
+    touched = []
     to_search = [node]
     leaves = []
 
@@ -32,6 +32,9 @@ def find_leaf_nodes(node, nx_graph):
                 leaves.append(str(i))
             else:
                 for j in neighbors:
-                    to_search.append(j)
+                    if j in to_search:
+                        continue
+                    else:
+                        to_search.append(j)
 
     return leaves

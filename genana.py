@@ -17,7 +17,7 @@ def read_graph(file):
 
 def generation_analysis(node, nx_graph):
     gen = 1
-    visited = [node]
+    visited = []
     nodes = [node]
 
     while len(nodes) != 0:
@@ -26,142 +26,125 @@ def generation_analysis(node, nx_graph):
             visited.append(i)
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
-                print("Edge between " + str(i) + " and " + str(j) + " has gen " + str(gen))
-                nx_graph[str(i)][str(j)]['Gen'] = gen
-                nn.append(j)
+                nx_graph = assign_order(nx_graph, i, j, gen, 'Gen')
+                if j in nodes:
+                    continue
+                else:
+                    nn.append(j)
         nodes = nn
         gen += 1
 
     return nx_graph
 
 
-def order_analysis(node, nx_graph):
-    pos = find_leaf_nodes(node, nx_graph)
-    visited = []
-    order = 1
-
-    # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
-    # We are done, when we reach the root node
-    while len(pos) > 0:
-        add = []
-        rm = []
-        for i in pos:
-            neighbors = list(nx.neighbors(nx_graph, i))
-            visited.append(i)
-
-            rm_n = []
-            for j in neighbors:
-                if j in visited:
-                    if j not in pos:
-                        rm_n.append(j)
-            for k in rm_n:
-                neighbors.remove(k)
-
-            if len(list(neighbors)) == 1:
-                print("The edge between node " + str(i) + " and " + str(neighbors[0]) + " has order " + str(order))
-                nx_graph[str(i)][str(neighbors[0])]['Ord'] = order
-                rm.append(i)
-                add.append(neighbors[0])
-
-        for i in add:
-            if i not in pos and i != node:
-                pos.append(i)
-
-        for i in rm:
-            pos.remove(i)
-            if i not in visited:
-                visited.append(i)
-
-        order += 1
-
-    return nx_graph
-
-
-# Just like order, but after gen 1 only increment generation by one when two equal generations meet
-def strahler_order(node, nx_graph):
+def order_analysis(node, nx_graph, strahler=False):
     positions = find_leaf_nodes(node, nx_graph)
-    visited = []
+    previous = []
+    positions_to_remove = []
+    positions_to_add = []
+    if strahler:
+        label = 'Str_Ord'
+    else:
+        label = 'Ord'
 
-    # Only ascend from one point, if we have already visited n-1 of its neighbours; otherwise try other points first
-    # We are done, when we reach the root node
     while len(positions) > 0:
-        add = []
-        rm = []
+        # Deadlock catch: If we didn't manage to do make any progress in the last round, we need to intervene
+        if positions == previous:
+            print('Deadlock detected')
+            i = 0
+            length_positions = len(positions)
+            solved = False
+
+            # Here we check for interconnections between our current positions
+            print('Trying strategy one to solve')
+            while length_positions > i and not solved:
+                neighbors = get_neighbours_wo_label(nx_graph, positions[i], label)
+                j = i + 1
+                while length_positions > j:
+                    if positions[j] in neighbors:
+                        # Assign an order to that connection
+                        orders_i = get_orders(nx_graph, positions[i], label)
+                        orders_j = get_orders(nx_graph, positions[j], label)
+                        new_order_i = determine_order(orders_i, strahler)
+                        new_order_j = determine_order(orders_j, strahler)
+                        # Identify higher order and assign it...
+                        if new_order_i >= new_order_j:
+                            new_order = new_order_i
+                        else:
+                            new_order = new_order_j
+                        nx_graph = assign_order(nx_graph, positions[i], positions[j], new_order, label)
+
+                        # exit both loops
+                        solved = True
+                        break
+
+                    j += 1
+                i += 1
+
+            # Continue with the normal routine. Either that was the sole problem or we solve the next one next time...
+            # If the first strategy did not work, that means that all positions have more than one outgoing edge.
+            # We just grab the first one and perform out label assignment. Either that did it or we will arrive here again for the next edge
+            if not solved:
+                print('Trying strategy two to solve')
+                for position in positions:
+                    neighbors = get_neighbours_wo_label(nx_graph, position, label)
+                    if len(neighbors) > 0:
+                            orders = get_orders(nx_graph, position, label)
+                            new_order = determine_order(orders, strahler)
+                            nx_graph = assign_order(nx_graph, position, neighbors[0], new_order, label)
+                            solved = True
+                            break
+
+            # If we ended up here, our problem-solving approaches were unable to fix the issue... weired
+            if not solved:
+                exit('Deadlock could not be solved. Exiting.')
+
+        previous = positions.copy()
+
+        # Normal operation
         for position in positions:
-            neighbors = list(nx.neighbors(nx_graph, position))
-            visited.append(position)
+            # Check for neighbours
+            neighbors = get_neighbours_wo_label(nx_graph, position, label)
 
-            rm_n = []
-            for j in neighbors:
-                if j in visited:
-                    if j not in positions:
-                        rm_n.append(j)
-            for k in rm_n:
-                neighbors.remove(k)
+            # Nowhere left to go means we can just remove this position from our list
+            if len(neighbors) == 0:
+                positions_to_remove.append(position)
+            # Only one option left means we can safely assign an order here
+            elif len(neighbors) == 1:
+                orders = get_orders(nx_graph, position, label)
+                new_order = determine_order(orders, strahler)
+                nx_graph = assign_order(nx_graph, position, neighbors[0], new_order, label)
+                positions_to_remove.append(position)
+                # As long as the neighbour is not the root node, we add it to the list of current positions
+                if neighbors[0] != node:
+                    positions_to_add.append(neighbors[0])
+            # More than one neighbour means we do other sites first
+            else:
+                continue
 
-            if len(list(neighbors)) == 1:
-                # Get neighbours of our node
-                bordering = list(nx.neighbors(nx_graph, position))
+        # Updating for next round
+        for entry in positions_to_add:
+            if entry not in positions:
+                positions.append(entry)
+        for entry in positions_to_remove:
+            if entry in positions:
+                positions.remove(entry)
 
-                # Get their orders
-                orders = []
-                for point in bordering:
-                    # Try block is needed, as we can not access a label, if it has not been assigned yet
-                    # => would throw an error when starting at leaf nodes
-                    try:
-                        orders.append(nx_graph[str(position)][str(point)]['Str_Ord'])
-                    except KeyError:
-                        continue
-
-                # If we have no existing orders, we start at 1 (position is a leaf node)
-                if len(orders) == 0:
-                    order = 1
-                # If there is only one previous order, there is no increase, we assign the previous order
-                elif len(orders) == 1:
-                    # Get their order
-                    order = orders[0]
-                # If we have multiple incoming nodes, we have to check for a possible increase
-                else:
-                    # Order values in array in descending order
-                    orders.sort()
-                    orders = orders[::-1]
-                    # If we have two equal orders, we increase the order by one
-                    if orders[0] == orders[1]:
-                        order = orders[0] + 1
-                    # If we have dissimilar orders, we continue with the highest one
-                    else:
-                        order = orders[0]
-
-                # Write new order into graph
-                nx_graph[str(position)][str(neighbors[0])]['Str_Ord'] = order
-
-                print(
-                    "The edge between node "
-                    + str(position) + " and "
-                    + str(neighbors[0])
-                    + " has strahler order " + str(order)
-                )
-                rm.append(position)
-                add.append(neighbors[0])
-
-        for i in add:
-            if i not in positions and i != node:
-                positions.append(i)
-
-        for i in rm:
+        for i in nodes_to_remove:
             positions.remove(i)
             if i not in visited:
                 visited.append(i)
+
+        deadlock = False
 
     return nx_graph
 
 
 # just like genana, but every edge gets its unique id instead of a generation
 # to be used for external grouping according to properties of the graph segments
-# TODO: probably very over engineered
 def give_id(node, nx_graph):
     unique_id = 1
-    visited = [node]
+    visited = []
     nodes = [node]
 
     while len(nodes) != 0:
@@ -170,13 +153,104 @@ def give_id(node, nx_graph):
             visited.append(i)
             neighbors = find_new_neighbors(i, visited, nx_graph)
             for j in neighbors:
-                print("Edge between " + str(i) + " and " + str(j) + " has id " + str(unique_id))
-                nx_graph[str(i)][str(j)]['Id'] = unique_id
-                nn.append(j)
+                nx_graph = assign_order(nx_graph, i, j, unique_id,'Id' )
                 unique_id += 1
+                if j in nodes:
+                    continue
+                else:
+                    nn.append(j)
         nodes = nn
 
     return nx_graph
+
+def get_order(nx_graph, position_0, position_1, label):
+    try:
+        existing_order = nx_graph[str(position_0)][str(position_1)][label]
+    except KeyError:
+        try:
+            existing_order = nx_graph[str(position_1)][str(position_0)][label]
+        except KeyError:
+            existing_order = ''
+
+    return existing_order
+
+
+
+def get_orders(nx_graph, position, label):
+    neighbours = list(nx.neighbors(nx_graph, position))
+
+    # Get their orders
+    orders = []
+    for neighbour in neighbours:
+        # Try block is needed, as we can not access a label, if it has not been assigned yet
+        # => would throw an error when starting at leaf nodes
+        try:
+            orders.append(nx_graph[str(position)][str(neighbour)][label])
+        except KeyError:
+            continue
+
+    return orders
+
+
+def determine_order(orders, strahler = False):
+    # If we have no existing orders, we start at 1 (position is a leaf node); identical for strahler and regular
+    if len(orders) == 0:
+        order = 1
+    else:
+        # Here we have to act depending on the different order metrics
+        if strahler:
+            # If there is only one previous order, there is no increase, we assign the previous order
+            if len(orders) == 1:
+                # Get their order
+                order = orders[0]
+            # If we have multiple incoming nodes, we have to check for a possible increase
+            else:
+                # Here we attribute either the highest incoming order or of two equal orders come in, we increment by one
+                # Order values in array in descending order
+                orders.sort()
+                orders = orders[::-1]
+                # If we have two equal orders, we increase the order by one
+                if orders[0] == orders[1]:
+                    order = orders[0] + 1
+                # If we have dissimilar orders, we continue with the highest one
+                else:
+                    order = orders[0]
+        else:
+            # Otherwise, the highest incoming order is increased by 1
+            orders.sort()
+            orders = orders[::-1]
+            order = orders[0] + 1
+
+    return order
+
+
+def assign_order(nx_graph, position_0, position_1, order, label):
+    # Write new order into graph
+    nx_graph[str(position_0)][str(position_1)][label] = order
+
+    # Provide information for the user
+    print(
+        'The edge between node '
+        + str(position_0) + ' and '
+        + str(position_1)
+        + ' has ' + label + ' ' + str(order)
+    )
+
+    return nx_graph
+
+
+def get_neighbours_wo_label(nx_graph, position, label):
+    neighbors = list(nx.neighbors(nx_graph, position))
+    # Remove neighbours that we already have a labeled edge to
+    neighbors_to_remove = []
+    for neighbor in neighbors:
+        if get_order(nx_graph, position, neighbor, label):
+            neighbors_to_remove.append(neighbor)
+
+    for entry in neighbors_to_remove:
+        neighbors.remove(entry)
+
+    return neighbors
 
 
 def calculate_length(nx_graph, size):
@@ -317,7 +391,7 @@ if __name__ == '__main__':
         nrrd_writer.write(graph_w_ord, dims, off, voxel_size, output, 'Ord')
     elif analysis_type == 'str_ord':
         print('Performing Strahler order analysis')
-        graph_w_str_ord = strahler_order(root_node, graph)
+        graph_w_str_ord = order_analysis(root_node, graph, True)
         print('Writing graph to ' + output + '.dot and ' + output + '.png')
         dot_writer.write(graph_w_str_ord, output, root_node, True, 'Str_Ord', color_map)
         print('Writing .nrrd to ' + output + '.nrrd')
@@ -335,7 +409,7 @@ if __name__ == '__main__':
         graph_w_ids = give_id(root_node, graph)
         graph_w_gens = generation_analysis(root_node, graph_w_ids)
         graph_w_ord = order_analysis(root_node, graph_w_gens)
-        graph_w_str_ord = strahler_order(root_node, graph_w_ord)
+        graph_w_str_ord = order_analysis(root_node, graph_w_ord, True)
         print('Calculating length')
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
         print('Writing .csv to ' + output + '.csv')
