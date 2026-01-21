@@ -42,9 +42,9 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
 
     # Get all nodes, print those out
     nodes = nx.nodes(nx_graph)
-    for i in nodes:
-        if str(i) != '\\n':
-            output_file.write(str(i) + ";\n")
+    for node in nodes:
+        if str(node) != '\\n':
+            output_file.write(str(node) + ";\n")
 
     # Write each edge pair with generation marking, hierarchically ordered
     visited = []
@@ -52,12 +52,18 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
 
     while len(nodes) != 0:
         nn = []
-        for i in nodes:
-            visited.append(i)
-            neighbors = find_new_neighbors(i, visited, nx_graph)
-            for j in neighbors:
+        for node in nodes:
+            # If there are multiple ways to reach this node, we might have been here already.
+            # In this case we can go to the next one right away.
+            if node in visited:
+                continue
+            else:
+                visited.append(node)
+
+            neighbors = find_new_neighbors(node, visited, nx_graph)
+            for neighbour in neighbors:
                 if color == bool(True):
-                    col = int(nx_graph[i][j][label]) - 1
+                    col = int(nx_graph[node][neighbour][label]) - 1
                     try:
                         col_str = " color = " + str(colors[col])
                     except IndexError:
@@ -66,20 +72,20 @@ def write(nx_graph, target_file, root_node, color=True, label='Gen', colormap=''
                     col_str = ""
 
                 try:
-                    label_str = str(nx_graph[i][j][label])
+                    label_str = str(nx_graph[node][neighbour][label])
                 except KeyError:
-                    print('Warning! No ' + str(label) + ' for edge between node ' + str(i) + ' and node ' + str(j))
+                    print('Warning! No ' + str(label) + ' for edge between node ' + str(node) + ' and node ' + str(neighbour))
                     label_str = '0'
 
                 output_file.write(
-                    str(i) + "--" + str(j) +
+                    str(node) + "--" + str(neighbour) +
                     " [ label = \"" + label + " " + label_str +
                     "\"" + col_str + "];\n"
                 )
-                if j in nodes:
+                if neighbour in nodes:
                     continue
                 else:
-                    nn.append(j)
+                    nn.append(neighbour)
         nodes = nn
 
     output_file.write("}")
