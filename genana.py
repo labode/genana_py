@@ -262,13 +262,19 @@ def calculate_length(nx_graph, size):
         pos_arr = []
 
         # Get the coordinates of the starting point of the edge
-        node_0 = nx_graph.node[str(edge[0])]['spatial_node']
+        try:
+            node_0 = nx_graph.node[str(edge[0])]['spatial_node']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge_points = nx_graph[str(edge[0])][str(edge[1])]['spatial_edge']
+        try:
+            edge_points = nx_graph[str(edge[0])][str(edge[1])]['spatial_edge']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         # TODO: The return looks like a json array, but using a json parser does not work
         # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
@@ -284,7 +290,10 @@ def calculate_length(nx_graph, size):
             pos_arr.append(coords)
 
         # Get the coordinates of the end point of the edge
-        node_1 = nx_graph.node[str(edge[1])]['spatial_node']
+        try:
+            node_1 = nx_graph.node[str(edge[1])]['spatial_node']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_1 = node_1.replace('"', '')
         coords = node_1.split(' ')
         pos_arr.append(coords)
@@ -300,13 +309,13 @@ def calculate_length(nx_graph, size):
             else:
                 # When we have a starting point, we can begin to calculate distances
                 if len(start) != 0:
-                    length += math.sqrt((int(start[0]) - int(pos[0])) ** 2
-                                        + (int(start[1]) - int(pos[1])) ** 2
-                                        + (int(start[2]) - int(pos[2])) ** 2)
+                    length += math.sqrt((int(start[0]) * size[0] - int(pos[0]) * size[0]) ** 2
+                                        + (int(start[1]) * size[1] - int(pos[1]) * size[1]) ** 2
+                                        + (int(start[2]) * size[2] - int(pos[2]) * size[2]) ** 2)
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(edge[0])][str(edge[1])]['Length'] = round(length * float(size), 4)
+        nx_graph[str(edge[0])][str(edge[1])]['Length'] = round(length, 4)
 
     return nx_graph
 
@@ -333,8 +342,12 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--color_map', action='store', type=str, required=False,
                         help='Path to color map')
     parser.add_argument('--png', action='store_true', help='Create .png of the .dot graph')
-    parser.add_argument('-v', '--voxel_size', action='store', type=float, default=1, required=False,
-                        help='Voxel edge length; If not supplied, 1 is used; only isometric voxels are supported')
+    parser.add_argument('--voxel_size_x', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
+    parser.add_argument('--voxel_size_y', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
+    parser.add_argument('--voxel_size_z', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
 
     # Arguments for Nrrd
     subparsers = parser.add_subparsers(dest='command', help='Subcommand help')
@@ -377,7 +390,11 @@ if __name__ == '__main__':
     output = args.output_file
     color_map = args.color_map
     png = args.png
-    voxel_size = args.voxel_size
+    voxel_size_x = args.voxel_size_x
+    voxel_size_y = args.voxel_size_y
+    voxel_size_z = args.voxel_size_z
+
+    voxel_size = [float(voxel_size_x), float(voxel_size_y), float(voxel_size_z)]
 
 
     print('Reading graph')

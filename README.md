@@ -29,7 +29,7 @@ Required packages are listed in requirements.txt and can be installed using pip 
 ### Optional
 - When the nrrd option is used: Volume offset (for .nrrd header)
 - Output filename (defaults to analysis[.dot|.png|.nrrd|.csv])
-- Voxel edge length (only symmetrical voxels are supported) for .nrrd header and length calculation (default = 1)
+- Voxel dimension (x, y, z) for .nrrd header and length calculation (default = 1)
 - .csv containing RGB values (comma separated, one RGB color per line) for coloring the output graph 
 
 
@@ -53,9 +53,11 @@ Required packages are listed in requirements.txt and can be installed using pip 
 For help and additional information run `python3 genana.py -h`
 
 ### Example
-For an order analysis of the file graph.dot, root node label = 0, volume size = 100 * 100 * 100 voxels, offset = 5, 5, 5 voxels, voxel size = 2 um, output filename = test_run, .png output is requested, no extra color map is provided
+For an order analysis of the file graph.dot, root node label = 0, volume size = 100 * 100 * 100 voxels, offset = 
+5, 5, 5 voxels, voxel size = 2 * 2 * 2 um, output filename = test_run, .png output is requested, no extra color map is provided
 
-`python3 genana.py graph.dot ord 0 nrrd 100 100 100 --offset_x 5 --offset_y 5 --offset_z 5 -v 2 -o test_run --png`
+`python3 genana.py graph.dot ord 0 nrrd 100 100 100 --offset_x 5 --offset_y 5 --offset_z 5 --voxel_size_x 2 
+--voxel_size_y 2 --voxel_size_z 2 -o test_run --png`
 
 [1] Weibel, E.R., 1963. Geometric and dimensional airway models of conductive, transitory and respiratory zones of the human lung, in: Morphometry of the Human Lung. Springer Berlin Heidelberg, pp. 136-142.\
 [2] Horsfield, K., 1984. Axial pathways compared with complete data in morphological studies of the lung. Respiration Physiology 55, 317-324.\
