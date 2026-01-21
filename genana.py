@@ -309,13 +309,13 @@ def calculate_length(nx_graph, size):
             else:
                 # When we have a starting point, we can begin to calculate distances
                 if len(start) != 0:
-                    length += math.sqrt((int(start[0]) - int(pos[0])) ** 2
-                                        + (int(start[1]) - int(pos[1])) ** 2
-                                        + (int(start[2]) - int(pos[2])) ** 2)
+                    length += math.sqrt((int(start[0]) * size[0] - int(pos[0]) * size[0]) ** 2
+                                        + (int(start[1]) * size[1] - int(pos[1]) * size[1]) ** 2
+                                        + (int(start[2]) * size[2] - int(pos[2]) * size[2]) ** 2)
 
                 start = [pos[0], pos[1], pos[2]]
 
-        nx_graph[str(edge[0])][str(edge[1])]['Length'] = round(length * float(size), 4)
+        nx_graph[str(edge[0])][str(edge[1])]['Length'] = round(length, 4)
 
     return nx_graph
 
@@ -342,8 +342,12 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--color_map', action='store', type=str, required=False,
                         help='Path to color map')
     parser.add_argument('--png', action='store_true', help='Create .png of the .dot graph')
-    parser.add_argument('-v', '--voxel_size', action='store', type=float, default=1, required=False,
-                        help='Voxel edge length; If not supplied, 1 is used; only isometric voxels are supported')
+    parser.add_argument('--voxel_size_x', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
+    parser.add_argument('--voxel_size_y', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
+    parser.add_argument('--voxel_size_z', action='store', type=float, default=1, required=False,
+                        help='Voxel dimension x; If not supplied, 1 is used')
 
     # Arguments for Nrrd
     subparsers = parser.add_subparsers(dest='command', help='Subcommand help')
@@ -386,7 +390,11 @@ if __name__ == '__main__':
     output = args.output_file
     color_map = args.color_map
     png = args.png
-    voxel_size = args.voxel_size
+    voxel_size_x = args.voxel_size_x
+    voxel_size_y = args.voxel_size_y
+    voxel_size_z = args.voxel_size_z
+
+    voxel_size = [float(voxel_size_x), float(voxel_size_y), float(voxel_size_z)]
 
 
     print('Reading graph')
