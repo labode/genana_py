@@ -22,19 +22,28 @@ def write(graph, dims, off, voxel_size, target_file, label='Gen'):
         pos_arr = []
 
         # Get the coordinates of the starting point of the edge
-        node_0 = graph.nodes[str(edge[0])]['spatial_node']
+        try:
+            node_0 = graph.nodes[str(edge[0])]['spatial_node']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to create nrrd file. Exiting.')
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
 
         # Get the coordinates of the end point of the edge
-        node_1 = graph.nodes[str(edge[1])]['spatial_node']
+        try:
+            node_1 = graph.nodes[str(edge[1])]['spatial_node']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to create nrrd file. Exiting.')
         node_1 = node_1.replace('"', '')
         coords = node_1.split(' ')
         pos_arr.append(coords)
 
         # Get all coordinates along the edge between start and end point
-        edge_points = graph[str(edge[0])][str(edge[1])]['spatial_edge']
+        try:
+            edge_points = graph[str(edge[0])][str(edge[1])]['spatial_edge']
+        except KeyError:
+            exit('Spatial node information missing in graph. Unable to create nrrd file. Exiting.')
         # TODO: The return looks like a json array, but using a json parser does not work
         # As this is a pretty simple string cleanup we do it by hand to save time
         to_replace = ['"', '[', ']', '{', '}']
