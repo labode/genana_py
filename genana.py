@@ -256,7 +256,7 @@ def calculate_length(nx_graph, size):
 
         # Get the coordinates of the starting point of the edge
         try:
-            node_0 = nx_graph.node[str(edge[0])]['spatial_node']
+            node_0 = nx_graph.nodes[str(edge[0])]['spatial_node']
         except KeyError:
             exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_0 = node_0.replace('"', '')
@@ -284,7 +284,7 @@ def calculate_length(nx_graph, size):
 
         # Get the coordinates of the end point of the edge
         try:
-            node_1 = nx_graph.node[str(edge[1])]['spatial_node']
+            node_1 = nx_graph.nodes[str(edge[1])]['spatial_node']
         except KeyError:
             exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_1 = node_1.replace('"', '')
