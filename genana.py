@@ -12,6 +12,12 @@ def read_graph(file):
     # https://networkx.org/documentation/stable/reference/generated/networkx.drawing.nx_pydot.read_dot.html
     dot_graph = nx.Graph(nx.drawing.nx_pydot.read_dot(file))
 
+    nodes = list(nx.nodes(dot_graph))
+    for node in nodes:
+        if node == '\\n':
+            dot_graph.remove_node(node)
+            print('Node ' + str(node) + ' has been removed as it is a control sequence, not a real node')
+
     return dot_graph
 
 
