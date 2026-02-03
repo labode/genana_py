@@ -297,6 +297,11 @@ def calculate_length(nx_graph, size):
         coords = node_1.split(' ')
         pos_arr.append(coords)
 
+        # Here we have all coordinates and can determine the middle of the edge
+        middle = round(len(pos_arr)/2, 0)
+        middle_coordinates = pos_arr[int(middle)]
+        nx_graph[str(edge[0])][str(edge[1])]['Middle'] = [middle_coordinates[0], middle_coordinates[1], middle_coordinates[2]]
+
         # Now that we have all coordinates our edge consists of, we can calculate the overall length
         length = 0
         start = []
@@ -449,4 +454,4 @@ if __name__ == '__main__':
         print('Calculating length')
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
         print('Writing .csv to ' + output + '.csv')
-        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length'])
+        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length', 'Middle'])
