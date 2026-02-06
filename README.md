@@ -48,7 +48,7 @@ Required packages are listed in requirements.txt and can be installed using pip 
 - global = Comparative analysis (Does all the classification methods plus edge length calculation, outputs results as .csv)
 
 ### Argument order
-`python3 genana.py input_file {gen,ord,str_ord,id,global} root_node nrrd dim_x dim_y dim_z`
+`python3 genana.py input_file {gen,ord,str_ord,id,global} root_node nrrd`
 
 For help and additional information run `python3 genana.py -h`
 
