@@ -268,6 +268,8 @@ def calculate_length(nx_graph, size):
         node_0 = node_0.replace('"', '')
         coords = node_0.split(' ')
         pos_arr.append(coords)
+        coords_0 = node_0.split(' ')
+        pos_arr.append(coords_0)
 
         # Get all coordinates along the edge between start and end point
         try:
@@ -294,13 +296,20 @@ def calculate_length(nx_graph, size):
         except KeyError:
             exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_1 = node_1.replace('"', '')
-        coords = node_1.split(' ')
-        pos_arr.append(coords)
+        coords_1 = node_1.split(' ')
+        pos_arr.append(coords_1)
 
         # Here we have all coordinates and can determine the middle of the edge
         middle = round(len(pos_arr)/2, 0)
         middle_coordinates = pos_arr[int(middle)]
         nx_graph[str(edge[0])][str(edge[1])]['Middle'] = [middle_coordinates[0], middle_coordinates[1], middle_coordinates[2]]
+
+        # Using the start and end coordinates of the edge, we can also calculate the euclidian distance between these points
+        distance = math.sqrt((int(coords_0[0]) * size[0] - int(coords_1[0]) * size[0]) ** 2
+                                        + (int(coords_0[1]) * size[1] - int(coords_1[1]) * size[1]) ** 2
+                                        + (int(coords_0[2]) * size[2] - int(coords_1[2]) * size[2]) ** 2)
+
+        nx_graph[str(edge[0])][str(edge[1])]['Distance'] = round(distance, 4)
 
         # Now that we have all coordinates our edge consists of, we can calculate the overall length
         length = 0
@@ -454,4 +463,4 @@ if __name__ == '__main__':
         print('Calculating length')
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
         print('Writing .csv to ' + output + '.csv')
-        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length', 'Middle'])
+        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length', 'Distance', 'Middle'])
