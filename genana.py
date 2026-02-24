@@ -266,8 +266,6 @@ def calculate_length(nx_graph, size):
         except KeyError:
             exit('Spatial node information missing in graph. Unable to calculate length. Exiting.')
         node_0 = node_0.replace('"', '')
-        coords = node_0.split(' ')
-        pos_arr.append(coords)
         coords_0 = node_0.split(' ')
         pos_arr.append(coords_0)
 
