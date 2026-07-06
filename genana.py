@@ -61,6 +61,18 @@ def order_analysis(node, nx_graph, strahler=False):
             length_positions = len(positions)
             solved = False
 
+            # Order the positions by their distance from the root node. We want to solve from outside inwards
+            positions_distances = {}
+            for position in positions:
+                # Fill a dictionary with all current positions and their distances from the root node
+                path_length = nx.shortest_path_length(nx_graph, position, node)
+                positions_distances[position] = path_length
+
+            # Sort the dictionary in descending order by distance
+            positions_distances = dict(sorted(positions_distances.items(), key=lambda item: item[1], reverse=True))
+            # Put the ordered positions back into the position array. We don't need the distance values anymore
+            positions = list(positions_distances.keys())
+
             # Here we check for interconnections between our current positions
             print('Trying strategy one to solve')
             while length_positions > i and not solved:
@@ -87,9 +99,9 @@ def order_analysis(node, nx_graph, strahler=False):
                     j += 1
                 i += 1
 
-            # Continue with the normal routine. Either that was the sole problem or we solve the next one next time...
             # If the first strategy did not work, that means that all positions have more than one outgoing edge.
             # We just grab the first one and perform out label assignment. Either that did it or we will arrive here again for the next edge
+            # We just grab the first one and perform our label assignment. Either that did it or we will arrive here again for the next edge
             if not solved:
                 print('Trying strategy two to solve')
                 for position in positions:
@@ -204,7 +216,7 @@ def determine_order(orders, strahler = False):
                 order = orders[0]
             # If we have multiple incoming nodes, we have to check for a possible increase
             else:
-                # Here we attribute either the highest incoming order or of two equal orders come in, we increment by one
+                # Here we attribute either the highest incoming order or if two equal orders come in, we increment by one
                 # Order values in array in descending order
                 orders.sort()
                 orders = orders[::-1]
