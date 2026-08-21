@@ -52,12 +52,12 @@ Required packages are listed in requirements.txt and can be installed using pip 
 
 For help and additional information run `python3 genana.py -h`
 
-### Example
+### Example 
 For an order analysis of the file graph.dot, root node label = 0, volume size = 100 * 100 * 100 voxels, offset = 
 5, 5, 5 voxels, voxel size = 2 * 2 * 2 um, output filename = test_run, .png output is requested, no extra color map is provided
 
-`python3 genana.py graph.dot ord 0 nrrd 100 100 100 --offset_x 5 --offset_y 5 --offset_z 5 --voxel_size_x 2 
---voxel_size_y 2 --voxel_size_z 2 -o test_run --png`
+`python3 genana.py graph.dot ord 0 -o test_run --voxel_size_x 2 
+--voxel_size_y 2 --voxel_size_z 2 nrrd 100 100 100 --offset_x 5 --offset_y 5 --offset_z 5 --png`
 
 [1] Weibel, E.R., 1963. Geometric and dimensional airway models of conductive, transitory and respiratory zones of the human lung, in: Morphometry of the Human Lung. Springer Berlin Heidelberg, pp. 136-142.\
 [2] Horsfield, K., 1984. Axial pathways compared with complete data in morphological studies of the lung. Respiration Physiology 55, 317-324.\
