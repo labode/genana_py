@@ -348,10 +348,7 @@ def calculate_length(nx_graph, size):
         nx_graph[str(edge[0])][str(edge[1])]['Middle'] = [middle_coordinates[0], middle_coordinates[1], middle_coordinates[2]]
 
         # Using the start and end coordinates of the edge, we can also calculate the euclidian distance between these points
-        distance = math.sqrt((int(coords_0[0]) * size[0] - int(coords_1[0]) * size[0]) ** 2
-                                        + (int(coords_0[1]) * size[1] - int(coords_1[1]) * size[1]) ** 2
-                                        + (int(coords_0[2]) * size[2] - int(coords_1[2]) * size[2]) ** 2)
-
+        distance = calculate_3d_distance(coords_0, coords_1, size)
         nx_graph[str(edge[0])][str(edge[1])]['Distance'] = round(distance, 4)
 
         # Now that we have all coordinates our edge consists of, we can calculate the overall length
@@ -365,9 +362,7 @@ def calculate_length(nx_graph, size):
             else:
                 # When we have a starting point, we can begin to calculate distances
                 if len(start) != 0:
-                    length += math.sqrt((int(start[0]) * size[0] - int(pos[0]) * size[0]) ** 2
-                                        + (int(start[1]) * size[1] - int(pos[1]) * size[1]) ** 2
-                                        + (int(start[2]) * size[2] - int(pos[2]) * size[2]) ** 2)
+                    length += calculate_3d_distance(start, pos, size)
 
                 start = [pos[0], pos[1], pos[2]]
 
