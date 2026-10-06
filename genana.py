@@ -264,6 +264,39 @@ def get_neighbours_wo_label(nx_graph, position, label):
     return neighbors
 
 
+def coordinate_string_to_array(coordinate_string):
+    result_array = []
+
+    # If we receive an empty string, we return an empty array. No need to perform string splitting and replacing
+    if coordinate_string != "\"[]\"":
+        # Remove characters, that are no use to us right now
+        characters_to_replace = ['"', '[', ']', '{', '}']
+        for character in characters_to_replace:
+            coordinate_string = coordinate_string.replace(character, '')
+
+        # As we potentially get multiple coordinates, we need to separate them
+        edge_coordinates = coordinate_string.split(',')
+
+        # Now we have a list with three values as each entry. We split them again, to get an array of 3d coordinates
+        for coordinate_triplet in edge_coordinates:
+            coordinates = coordinate_triplet.split(' ')
+            # Convert the strings to int
+            coordinates = [int(i) for i in coordinates]
+            result_array.append(coordinates)
+
+    return result_array
+
+
+def calculate_3d_distance(coordinates_one, coordinates_two, size=None):
+    if size is None:
+        size = [1, 1, 1]
+    distance = math.sqrt((int(coordinates_one[0]) * size[0] - int(coordinates_two[0]) * size[0]) ** 2
+                                        + (int(coordinates_one[1]) * size[1] - int(coordinates_two[1]) * size[1]) ** 2
+                                        + (int(coordinates_one[2]) * size[2] - int(coordinates_two[2]) * size[2]) ** 2)
+
+    return distance
+
+
 def calculate_length(nx_graph, size):
 
     # get all edges
@@ -342,7 +375,59 @@ def calculate_length(nx_graph, size):
 
     return nx_graph
 
-# TODO: Possible extension: Add function to calculate path length from every leaf node to the root node?
+
+def determine_path(node, nx_graph, size):
+    # Get all edges
+    edges = list(nx.edges(nx_graph))
+    for edge in edges:
+        print('Looking at edge between node ' + str(edge[0]) + ' and node ' + str(edge[1]))
+        # For each end node of the edge, get the distance to the root node (we don't know which one is closer)
+        path_one = nx.shortest_path(nx_graph, source=node, target=edge[0])
+        print('Path one:')
+        print(path_one)
+        path_two = nx.shortest_path(nx_graph, source=node, target=edge[1])
+        print('Path two:')
+        print(path_two)
+
+        # Persist the shorter one
+        if len(path_one) < len(path_two):
+            path_to_edge = path_one
+        else:
+            path_to_edge = path_two
+
+        # Exclude the 'edge' between the root node and itself
+        if len(path_to_edge) > 1:
+            print('The shorter path is')
+            print(path_to_edge)
+            nx_graph[str(edge[0])][str(edge[1])]['Path'] = path_to_edge
+            # Number of edges that make up the path. This could be determined from the path given above, but as we have
+            # it, we can print it out right here
+            nx_graph[str(edge[0])][str(edge[1])]['Path_Elements'] = len(path_to_edge) - 1
+
+            # For each section of that path, get the edge length and sum it up
+            print('Summing up the length')
+            length = 0
+            i = 0
+            while i+1 < len(path_to_edge):
+                print('The path between node ' + str(path_to_edge[i]) + ' and node ' + str(path_to_edge[i+1]) +
+                      ' has a length of')
+                length += nx_graph[path_to_edge[i]][path_to_edge[i+1]]['Length']
+                print(nx_graph[path_to_edge[i]][path_to_edge[i+1]]['Length'])
+                i +=1
+
+            print('The overall path length is')
+            print(round(length, 4))
+            nx_graph[str(edge[0])][str(edge[1])]['Path_Length'] = round(length, 4)
+
+            # Calculate the euclidian distance between root node and edge start node
+            coordinates_start = coordinate_string_to_array(nx_graph.nodes[str(path_to_edge[0])]['spatial_node'])
+            coordinates_end = coordinate_string_to_array(nx_graph.nodes[str(path_to_edge[-1])]['spatial_node'])
+
+            distance = calculate_3d_distance(coordinates_start[0], coordinates_end[0], size)
+            nx_graph[str(edge[0])][str(edge[1])]['Path_Distance'] = round(distance, 4)
+
+    return nx_graph
+
 
 # TODO: Possible extension: Calculate cumulated sizes for strahler order
 #  => connected segments of the same order are counted as one segment
@@ -470,7 +555,11 @@ if __name__ == '__main__':
         graph_w_gens = generation_analysis(root_node, graph_w_ids)
         graph_w_ord = order_analysis(root_node, graph_w_gens)
         graph_w_str_ord = order_analysis(root_node, graph_w_ord, True)
-        print('Calculating length')
+        print('Calculating edge length')
         graph_w_length = calculate_length(graph_w_str_ord, voxel_size)
+        print('Calculating path length')
+        graph_w_path_length = determine_path(root_node, graph_w_length, voxel_size)
         print('Writing .csv to ' + output + '.csv')
-        csv_writer.write(graph_w_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length', 'Distance', 'Middle'])
+        csv_writer.write(graph_w_path_length, output, ['Id', 'Gen', 'Ord', 'Str_Ord', 'Length', 'Distance',
+                                                       'Middle', 'Path', 'Path_Elements', 'Path_Length',
+                                                       'Path_Distance'])
